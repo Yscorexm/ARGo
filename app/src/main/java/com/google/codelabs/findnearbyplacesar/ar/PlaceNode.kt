@@ -42,8 +42,8 @@ class PlaceNode(
         }
 
         ViewRenderable.builder()
-            .setView(context, R.layout.place_view)
-            .build()
+            .setView(context, R.layout.text_card_view)
+            .build()    
             .thenAccept { renderable ->
                 setRenderable(renderable)
                 placeRenderable = renderable
