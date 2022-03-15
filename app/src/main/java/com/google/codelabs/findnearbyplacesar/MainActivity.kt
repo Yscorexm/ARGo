@@ -157,12 +157,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         } as? PlaceNode
         matchingPlaceNode?.showInfoWindow()
 
-        // Show as marker
-        val matchingMarker = markers.firstOrNull {
-            val placeTag = (it.tag as? Place) ?: return@firstOrNull false
-            return@firstOrNull placeTag == place
-        }
-        matchingMarker?.showInfoWindow()
     }
 
     private fun getCurrentLocation(onSuccess: (Location) -> Unit) {
@@ -175,32 +169,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun getNearbyPlaces(location: Location) {
-//        val apiKey = this.getString(R.string.google_maps_key)
-//        placesService.nearbyPlaces(
-//            apiKey = apiKey,
-//            location = "${location.latitude},${location.longitude}",
-//            radiusInMeters = 2000,
-//            placeType = "park"
-//        ).enqueue(
-//            object : Callback<NearbyPlacesResponse> {
-//                override fun onFailure(call: Call<NearbyPlacesResponse>, t: Throwable) {
-//                    Log.e(TAG, "Failed to get nearby places", t)
-//                }
-//
-//                override fun onResponse(
-//                    call: Call<NearbyPlacesResponse>,
-//                    response: Response<NearbyPlacesResponse>
-//                ) {
-//                    if (!response.isSuccessful) {
-//                        Log.e(TAG, "Failed to get nearby places")
-//                        return
-//                    }
-//
-//                    val places = response.body()?.results ?: emptyList()
-//                    this@MainActivity.places = places
-//                }
-//            }
-//        )
         this.places = listOf(
             Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),
             Place("id1", "note2, wt", Geometry(GeometryLocation(lat=42.299268, lng=-83.717808)))
