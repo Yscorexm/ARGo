@@ -6,3 +6,8 @@
 + Filter the place by distance
 + Refresh the mainview on (location change, sensor change?)
 + Finish the textbox, click and edit...
+
+# TODO 2
++ 修改放置的obj形状
++ 修改放置的obj位置
++ 修改tap屏幕时的behavior（有anchor时增加obj，否则添加anchor）
