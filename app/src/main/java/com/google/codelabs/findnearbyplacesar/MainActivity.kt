@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var placesService: PlacesService
     private lateinit var arFragment: PlacesArFragment
-    private lateinit var mapFragment: SupportMapFragment
 
     // Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -78,15 +77,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         setContentView(R.layout.activity_main)
 
         arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
-        mapFragment =
-            supportFragmentManager.findFragmentById(R.id.maps_fragment) as SupportMapFragment
+
 
         sensorManager = getSystemService()!!
         placesService = PlacesService.create()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setUpAr()
-        setUpMaps()
+        getCurrentLocation {
+            getNearbyPlaces(it)
+        }
     }
 
     override fun onResume() {
@@ -173,28 +173,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return@firstOrNull placeTag == place
         }
         matchingMarker?.showInfoWindow()
-    }
-
-
-    private fun setUpMaps() {
-        mapFragment.getMapAsync { googleMap ->
-            googleMap.isMyLocationEnabled = true
-
-            getCurrentLocation {
-                val pos = CameraPosition.fromLatLngZoom(it.latLng, 13f)
-                googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
-                getNearbyPlaces(it)
-            }
-            googleMap.setOnMarkerClickListener { marker ->
-                val tag = marker.tag
-                if (tag !is Place) {
-                    return@setOnMarkerClickListener false
-                }
-                showInfoWindow(tag)
-                return@setOnMarkerClickListener true
-            }
-            map = googleMap
-        }
     }
 
     private fun getCurrentLocation(onSuccess: (Location) -> Unit) {

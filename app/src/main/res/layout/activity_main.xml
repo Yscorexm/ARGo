@@ -22,17 +22,10 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <fragment android:name="com.google.codelabs.findnearbyplacesar.ar.PlacesArFragment"
-        android:id="@+id/ar_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="7"/>
-
     <fragment
-        class="com.google.android.gms.maps.SupportMapFragment"
-        android:id="@+id/maps_fragment"
+        android:id="@+id/ar_fragment"
+        android:name="com.google.codelabs.findnearbyplacesar.ar.PlacesArFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"/>
+        android:layout_height="match_parent" />
 
 </LinearLayout>
