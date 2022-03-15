@@ -35,7 +35,14 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.ar.core.Anchor
+import com.google.ar.core.Plane
+import com.google.ar.core.Pose
+import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.FrameTime
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.ux.TransformableNode
 import com.google.codelabs.findnearbyplacesar.api.NearbyPlacesResponse
 import com.google.codelabs.findnearbyplacesar.api.PlacesService
 import com.google.codelabs.findnearbyplacesar.ar.PlaceNode
@@ -68,6 +75,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var places: List<Place>? = null
     private var currentLocation: Location? = null
     private var map: GoogleMap? = null
+
+    private var anchorSelected: Boolean = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,14 +123,40 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun setUpAr() {
-        arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
-            // Create anchor
-            val anchor = hitResult.createAnchor()
-            anchorNode = AnchorNode(anchor)
-            anchorNode?.setParent(arFragment.arSceneView.scene)
-            addPlaces(anchorNode!!)
+        arFragment.arSceneView.scene.addOnUpdateListener { frameTime ->
+            val frame = arFragment.arSceneView.arFrame
+            if (frame != null) {
+                //get the trackables to ensure planes are detected
+                if (!anchorSelected) {
+                    val planes = frame.getUpdatedTrackables(Plane::class.java).iterator()
+                    while(planes.hasNext()) {
+                        val plane = planes.next() as Plane
+
+                        //If a plane has been detected & is being tracked by ARCore
+                        if (plane.trackingState == TrackingState.TRACKING && !anchorSelected) {
+                            //Hide the plane discovery helper animation
+                            // arFragment.planeDiscoveryController.hide()
+                            val anchor = plane.createAnchor(plane.centerPose)
+                            anchorSelected = true
+                            anchorNode = AnchorNode(anchor)
+                            anchorNode?.setParent(arFragment.arSceneView.scene)
+                            addPlaces(anchorNode!!)
+                            break
+                        }
+                    }
+                }
+
+            }
         }
+//        arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
+//            // Create anchor
+//            val anchor = hitResult.createAnchor()
+//            anchorNode = AnchorNode(anchor)
+//            anchorNode?.setParent(arFragment.arSceneView.scene)
+//            addPlaces(anchorNode!!)
+//        }
     }
+
 
     private fun addPlaces(anchorNode: AnchorNode) {
         val currentLocation = currentLocation

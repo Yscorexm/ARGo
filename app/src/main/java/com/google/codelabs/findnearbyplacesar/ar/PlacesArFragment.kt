@@ -15,7 +15,14 @@
 package com.google.codelabs.findnearbyplacesar.ar
 
 import android.Manifest
+import com.google.ar.core.Plane
+import com.google.ar.core.Pose
+import com.google.ar.core.TrackingState
+import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.FrameTime
+import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.ux.ArFragment
+import com.google.ar.sceneform.ux.TransformableNode
 
 class PlacesArFragment : ArFragment() {
 
