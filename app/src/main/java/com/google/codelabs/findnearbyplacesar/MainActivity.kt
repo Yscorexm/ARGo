@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
 
-        val placeNode = PlaceNode(this, null)
+//        val placeNode = PlaceNode(this, null)
 
     }
 
