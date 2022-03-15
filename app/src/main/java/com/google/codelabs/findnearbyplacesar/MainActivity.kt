@@ -148,13 +148,24 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             }
         }
-//        arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
-//            // Create anchor
-//            val anchor = hitResult.createAnchor()
-//            anchorNode = AnchorNode(anchor)
-//            anchorNode?.setParent(arFragment.arSceneView.scene)
-//            addPlaces(anchorNode!!)
-//        }
+        arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
+            // Create anchor
+            val anchor = hitResult.createAnchor()
+            val newAnchorNode = AnchorNode(anchor)
+            newAnchorNode?.setParent(arFragment.arSceneView.scene)
+            addNote(newAnchorNode!!)
+        }
+    }
+
+    private fun addNote(anchorNode: AnchorNode) {
+        val currentLocation = currentLocation
+        if (currentLocation == null) {
+            Log.w(TAG, "Location has not been determined yet")
+            return
+        }
+
+        val placeNode = PlaceNode(this, null)
+
     }
 
 
