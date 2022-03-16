@@ -25,7 +25,7 @@ import kotlin.math.sin
  * A model describing details about a Place (location, name, type, etc.).
  */
 
-@Serializable
+
 data class Place(
     val id: String,
     val name: String,
@@ -56,3 +56,12 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val z = r * cos(azimuth + heading).toFloat()
     return Vector3(x, y, z)
 }
+
+
+@Serializable
+class JsonPlace(
+    val id: String,
+    val name: String,
+    val lat: String,
+    val lng: String
+)
