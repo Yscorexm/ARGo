@@ -15,7 +15,9 @@
 package com.google.codelabs.findnearbyplacesar
 
 import android.app.ActivityManager
+import android.app.Application
 import android.content.Context
+import android.content.res.AssetManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -51,9 +53,14 @@ import com.google.codelabs.findnearbyplacesar.model.Geometry
 import com.google.codelabs.findnearbyplacesar.model.GeometryLocation
 import com.google.codelabs.findnearbyplacesar.model.Place
 import com.google.codelabs.findnearbyplacesar.model.getPositionVector
+import com.google.gson.Gson
+import org.json.JSONArray
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
