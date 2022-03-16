@@ -1,4 +1,4 @@
-package com.google.codelabs.findnearbyplacesar
+package edu.umich.argo.arnote.ar
 
 import android.content.Context
 import com.google.gson.Gson
