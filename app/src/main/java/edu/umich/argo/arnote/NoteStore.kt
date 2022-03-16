@@ -7,6 +7,7 @@ import edu.umich.argo.arnote.model.Place
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.IOException
 
 object NoteStore {
@@ -55,19 +56,21 @@ object NoteStore {
         val data = JSONArray(jsonStr)
         val gson = Gson()
         for (i in 0 until data.length()) {
-            val noteEntry = data[i] as JSONArray
-            if (noteEntry.length() != 0) {
+            val noteEntry = data[i] as JSONObject?
+            if (noteEntry != null) {
                 this._notes.add(JsonPlace(
-                    id = noteEntry[0].toString(),
-                    name = noteEntry[1].toString(),
-                    lat = noteEntry[2].toString(),
-                    lng = noteEntry[3].toString()
+                    id = noteEntry.get("id").toString(),
+                    name = noteEntry.get("name").toString(),
+                    lat = noteEntry.get("lat").toString(),
+                    lng = noteEntry.get("lng").toString()
                 ))
+            }
+            if (noteEntry != null) {
                 this.notes.add(Place(
-                    id = noteEntry[0].toString(),
-                    name = noteEntry[1].toString(),
-                    lat = noteEntry[2].toString(),
-                    lng = noteEntry[3].toString()
+                    id = noteEntry.get("id").toString(),
+                    name = noteEntry.get("name").toString(),
+                    lat = noteEntry.get("lat").toString(),
+                    lng = noteEntry.get("lng").toString()
                 ))
             }
         }

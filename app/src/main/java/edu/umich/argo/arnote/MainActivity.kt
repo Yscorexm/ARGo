@@ -38,10 +38,10 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Vector3
-import com.google.codelabs.findnearbyplacesar.NoteStore.addNoteToStore
-import com.google.codelabs.findnearbyplacesar.NoteStore.dumpNote
-import com.google.codelabs.findnearbyplacesar.NoteStore.getNote
-import com.google.codelabs.findnearbyplacesar.NoteStore.loadNote
+import edu.umich.argo.arnote.ar.NoteStore.addNoteToStore
+import edu.umich.argo.arnote.ar.NoteStore.dumpNote
+import edu.umich.argo.arnote.ar.NoteStore.getNote
+import edu.umich.argo.arnote.ar.NoteStore.loadNote
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
