@@ -32,14 +32,14 @@ object NoteStore {
     }
 
     fun dumpNote(context: Context) {
-        val jsonList = Json.encodeToString(_notes)
+        val jsonList = Json.encodeToString(this._notes)
         context.openFileOutput(gpsFilePath, Context.MODE_PRIVATE).use {
             it.write(jsonList.toByteArray())
         }
     }
 
-    fun addNote(place: Place) {
-        _notes.add(
+    fun addNoteToStore(place: Place) {
+        this._notes.add(
             JsonPlace(
             id = place.id,
             name = place.name,
@@ -47,23 +47,23 @@ object NoteStore {
             lng = place.lng
         )
         )
-        notes.add(place)
+        this.notes.add(place)
     }
 
     fun loadNote(context: Context) {
-        val jsonStr = file2JsonStr(context)
+        val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)
         val gson = Gson()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONArray
             if (noteEntry.length() != 0) {
-                _notes.add(JsonPlace(
+                this._notes.add(JsonPlace(
                     id = noteEntry[0].toString(),
                     name = noteEntry[1].toString(),
                     lat = noteEntry[2].toString(),
                     lng = noteEntry[3].toString()
                 ))
-                notes.add(Place(
+                this.notes.add(Place(
                     id = noteEntry[0].toString(),
                     name = noteEntry[1].toString(),
                     lat = noteEntry[2].toString(),
@@ -73,8 +73,8 @@ object NoteStore {
         }
     }
 
-    fun getNotee(): MutableList<Place> {
-        return notes
+    fun getNote(): MutableList<Place> {
+        return this.notes
     }
 
 }

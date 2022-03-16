@@ -38,6 +38,10 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Vector3
+import com.google.codelabs.findnearbyplacesar.NoteStore.addNoteToStore
+import com.google.codelabs.findnearbyplacesar.NoteStore.dumpNote
+import com.google.codelabs.findnearbyplacesar.NoteStore.getNote
+import com.google.codelabs.findnearbyplacesar.NoteStore.loadNote
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
@@ -59,7 +63,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var anchorNode: AnchorNode? = null
     private var otherAnchorNodes = mutableListOf<AnchorNode>()
     private var markers: MutableList<Marker> = emptyList<Marker>().toMutableList()
-    private var places: MutableList<Place>? = null
     private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
@@ -77,10 +80,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         sensorManager = getSystemService()!!
 
-        this.places = mutableListOf(
-            Place("id0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
-            Place("id1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
-        )
+        loadNote(applicationContext)
+        val places = getNote()
+        if (places?.size ?: 0 == 0) {
+            addNoteToStore(
+                Place("id0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
+            )
+            addNoteToStore(
+                Place("id1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
+            )
+
+        }
+
         getCurrentLocation()
         setUpAr()
     }
@@ -106,6 +117,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
 //        sensorManager.unregisterListener(this)
+        dumpNote(applicationContext)
     }
 
     private fun setUpAr() {
@@ -157,7 +169,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
 
-        val places = places
+        val places = getNote()
         if (places == null) {
             Log.w(TAG, "No places to put")
             return
@@ -269,7 +281,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         return
                     }
                     val place = Place("ok", message, currentLocation.lat, currentLocation.lng)
-                    this.places?.add(place)
+                    addNoteToStore(place)
                     val placeNode = PlaceNode(this, place)
                     placeNode.setParent(it)
                     placeNode.localPosition = Vector3(0f, 1f, 0f)
@@ -280,6 +292,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
     }
+
 }
 
 
