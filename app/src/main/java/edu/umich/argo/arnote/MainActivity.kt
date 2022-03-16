@@ -15,6 +15,7 @@
 package edu.umich.argo.arnote
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
@@ -27,6 +28,8 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
@@ -47,11 +50,15 @@ import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getPositionVector
 
+@SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private val TAG = "MainActivity"
 
     private lateinit var arFragment: PlacesArFragment
+
+    private lateinit var createLauncher: ActivityResultLauncher<Intent>
+    private lateinit var editLauncher: ActivityResultLauncher<Intent>
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -66,8 +73,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
-    private var currentPlaceNode: PlaceNode? = null
     private var newAnchorNode: AnchorNode? = null
+    private var currentPlaceNode: PlaceNode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,8 +83,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
         setContentView(R.layout.activity_main)
 
-        arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+            results.forEach {
+                if (!it.value) {
+                    Toast.makeText(this, "Location access denied", Toast.LENGTH_LONG).show()
+                    finish()
+                }
+            }
+        }.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
 
+        arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
         sensorManager = getSystemService()!!
 
         loadNote(applicationContext)
@@ -93,6 +108,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         getCurrentLocation()
+        createLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                val message = it.data?.getStringExtra("message")?:""
+
+                currentLocation?.let {
+                    val place = Place("ok", message, it.lat, it.lng)
+                    addNoteToStore(place)
+                    newAnchorNode?.let {
+                        val placeNode = PlaceNode(this, place)
+                        placeNode.setParent(it)
+                        placeNode.localPosition = Vector3(0f, 0f, 0f)
+                        placeNode.setOnTapListener { _, _ ->
+                            showInfoWindow(place, it)
+                        }
+                    }
+                }
+            }
+        }
+        editLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                val message = it.data?.getStringExtra("message")
+                currentPlaceNode?.setText(message)
+            }
+        }
         setUpAr()
     }
 
@@ -159,7 +198,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun addNote(anchorNode: AnchorNode) {
         newAnchorNode = anchorNode
-        startActivityForResult(Intent(this, EditActivity::class.java), 2)
+        createLauncher.launch(Intent(this, EditActivity::class.java))
     }
 
 
@@ -195,28 +234,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val otherPlace = (it as PlaceNode).place ?: return@first false
             return@first otherPlace == place
         } as? PlaceNode
-        startActivityForResult(Intent(this, EditActivity::class.java), 1)
-
+        editLauncher.launch(Intent(this, EditActivity::class.java))
     }
 
     private fun getCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
         LocationServices.getFusedLocationProviderClient(applicationContext)
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
@@ -261,37 +282,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             magnetometerReading
         )
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                val message = data?.getStringExtra("message")
-                currentPlaceNode?.setText(message)
-            }
-        } else if (requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                val message = data?.getStringExtra("message")?:""
-
-                newAnchorNode?.let {
-                    val currentLocation = currentLocation
-                    if (currentLocation == null) {
-                        Log.w(TAG, "Location has not been determined yet")
-                        return
-                    }
-                    val place = Place("ok", message, currentLocation.lat, currentLocation.lng)
-                    addNoteToStore(place)
-                    val placeNode = PlaceNode(this, place)
-                    placeNode.setParent(it)
-                    placeNode.localPosition = Vector3(0f, 0f, 0f)
-                    placeNode.setOnTapListener { _, _ ->
-                        showInfoWindow(place, it)
-                    }
-                }
-            }
-        }
     }
 
 }
