@@ -56,16 +56,20 @@ class PlaceNode(
     }
 
     fun showInfoWindow() {
-        // Show text
-        textViewPlace?.let {
-            it.visibility = if (it.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-        }
+//        // Show text
+//        textViewPlace?.let {
+//            it.visibility = if (it.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+//        }
+//
+//        // Hide text for other nodes
+//        this.parent?.children?.filter {
+//            it is PlaceNode && it != this
+//        }?.forEach {
+//            (it as PlaceNode).textViewPlace?.visibility = View.GONE
+//        }
+    }
 
-        // Hide text for other nodes
-        this.parent?.children?.filter {
-            it is PlaceNode && it != this
-        }?.forEach {
-            (it as PlaceNode).textViewPlace?.visibility = View.GONE
-        }
+    fun setText(message: String?) {
+        textViewPlace?.text = message
     }
 }
