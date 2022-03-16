@@ -20,11 +20,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context="edu.umich.argo.arnote.MainActivity">
 
     <fragment
         android:id="@+id/ar_fragment"
-        android:name="com.google.codelabs.findnearbyplacesar.ar.PlacesArFragment"
+        android:name="edu.umich.argo.arnote.ar.PlacesArFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

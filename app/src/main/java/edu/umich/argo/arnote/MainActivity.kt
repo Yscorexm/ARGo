@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.codelabs.findnearbyplacesar
+package edu.umich.argo.arnote
 
 import android.Manifest
 import android.app.ActivityManager
@@ -24,50 +24,30 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import android.view.ActionMode
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
-import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
-import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.ux.TransformableNode
-import com.google.codelabs.findnearbyplacesar.api.NearbyPlacesResponse
-import com.google.codelabs.findnearbyplacesar.api.PlacesService
-import com.google.codelabs.findnearbyplacesar.ar.PlaceNode
-import com.google.codelabs.findnearbyplacesar.ar.PlacesArFragment
-import com.google.codelabs.findnearbyplacesar.model.Geometry
-import com.google.codelabs.findnearbyplacesar.model.GeometryLocation
-import com.google.codelabs.findnearbyplacesar.model.Place
-import com.google.codelabs.findnearbyplacesar.model.getPositionVector
+import edu.umich.argo.arnote.ar.PlaceNode
+import edu.umich.argo.arnote.ar.PlacesArFragment
+import edu.umich.argo.arnote.model.Place
+import edu.umich.argo.arnote.model.getPositionVector
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private val TAG = "MainActivity"
 
     private lateinit var arFragment: PlacesArFragment
-
-    // Location
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -83,8 +63,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
-
     private var currentPlaceNode: PlaceNode? = null
+    private var newAnchorNode: AnchorNode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,13 +75,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
 
-
         sensorManager = getSystemService()!!
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         this.places = mutableListOf(
-            Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),
-            Place("id1", "note2, wt", Geometry(GeometryLocation(lat=42.299268, lng=-83.717808)))
+            Place("id0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
+            Place("id1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
         )
         getCurrentLocation()
         setUpAr()
@@ -109,25 +87,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
-            sensorManager.registerListener(
-                this,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
-            sensorManager.registerListener(
-                this,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
+//            sensorManager.registerListener(
+//                this,
+//                it,
+//                SensorManager.SENSOR_DELAY_NORMAL
+//            )
+//        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
+//            sensorManager.registerListener(
+//                this,
+//                it,
+//                SensorManager.SENSOR_DELAY_NORMAL
+//            )
+//        }
     }
 
     override fun onPause() {
         super.onPause()
-        sensorManager.unregisterListener(this)
+//        sensorManager.unregisterListener(this)
     }
 
     private fun setUpAr() {
@@ -167,21 +145,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun addNote(anchorNode: AnchorNode) {
-        val currentLocation = currentLocation
-        if (currentLocation == null) {
-            Log.w(TAG, "Location has not been determined yet")
-            return
-        }
-
-        val place = currentLocation
-        this.places?.add(place)
-        val placeNode = PlaceNode(this, place)
-        placeNode.setParent(anchorNode)
-        placeNode.localPosition = Vector3(0f, 1f, 0f)
-        placeNode.setOnTapListener { _, _ ->
-            showInfoWindow(place, anchorNode)
-        }
-
+        newAnchorNode = anchorNode
+        startActivityForResult(Intent(this, EditActivity::class.java), 2)
     }
 
 
@@ -202,7 +167,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Add the place in AR
             val placeNode = PlaceNode(this, place)
             placeNode.setParent(anchorNode)
-            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.geometry.location.latLng)
+            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.latLng)
             placeNode.setOnTapListener { _, _ ->
                 showInfoWindow(place, anchorNode)
             }
@@ -243,7 +208,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    currentLocation = Place("current", "ok", Geometry(GeometryLocation(it.result.latitude, it.result.longitude)))
+                    currentLocation = Place("current", "ok", it.result.latitude.toString(), it.result.longitude.toString())
                 } else {
                     Log.e("PostActivity getFusedLocation", it.exception.toString())
                 }
@@ -291,8 +256,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 val message = data?.getStringExtra("message")
-                currentPlaceNode
                 currentPlaceNode?.setText(message)
+            }
+        } else if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                val message = data?.getStringExtra("message")?:""
+
+                newAnchorNode?.let {
+                    val currentLocation = currentLocation
+                    if (currentLocation == null) {
+                        Log.w(TAG, "Location has not been determined yet")
+                        return
+                    }
+                    val place = Place("ok", message, currentLocation.lat, currentLocation.lng)
+                    this.places?.add(place)
+                    val placeNode = PlaceNode(this, place)
+                    placeNode.setParent(it)
+                    placeNode.localPosition = Vector3(0f, 1f, 0f)
+                    placeNode.setOnTapListener { _, _ ->
+                        showInfoWindow(place, it)
+                    }
+                }
             }
         }
     }

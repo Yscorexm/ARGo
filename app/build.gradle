@@ -7,8 +7,12 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
+    packagingOptions {
+        exclude("META-INF/*.kotlin_module")
+    }
+
     defaultConfig {
-        applicationId "com.google.codelabs.findlocalplacesinar"
+        applicationId "com.google.argo.arnote"
         minSdkVersion 24
         targetSdkVersion 29
         versionCode 1
