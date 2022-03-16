@@ -14,10 +14,12 @@
 
 package com.google.codelabs.findnearbyplacesar
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
-import android.content.res.AssetManager
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -25,10 +27,13 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.ActionMode
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -37,6 +42,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
@@ -53,20 +59,11 @@ import com.google.codelabs.findnearbyplacesar.model.Geometry
 import com.google.codelabs.findnearbyplacesar.model.GeometryLocation
 import com.google.codelabs.findnearbyplacesar.model.Place
 import com.google.codelabs.findnearbyplacesar.model.getPositionVector
-import com.google.gson.Gson
-import org.json.JSONArray
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private val TAG = "MainActivity"
 
-    private lateinit var placesService: PlacesService
     private lateinit var arFragment: PlacesArFragment
 
     // Location
@@ -80,12 +77,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private val orientationAngles = FloatArray(3)
 
     private var anchorNode: AnchorNode? = null
+    private var otherAnchorNodes = mutableListOf<AnchorNode>()
     private var markers: MutableList<Marker> = emptyList<Marker>().toMutableList()
-    private var places: List<Place>? = null
-    private var currentLocation: Location? = null
+    private var places: MutableList<Place>? = null
+    private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
 
+    private var currentPlaceNode: PlaceNode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,13 +97,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 
         sensorManager = getSystemService()!!
-        placesService = PlacesService.create()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        this.places = mutableListOf(
+            Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),
+            Place("id1", "note2, wt", Geometry(GeometryLocation(lat=42.299268, lng=-83.717808)))
+        )
+        getCurrentLocation()
         setUpAr()
-        getCurrentLocation {
-            getNearbyPlaces(it)
-        }
     }
 
     override fun onResume() {
@@ -161,6 +161,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val anchor = hitResult.createAnchor()
             val newAnchorNode = AnchorNode(anchor)
             newAnchorNode?.setParent(arFragment.arSceneView.scene)
+            otherAnchorNodes.add(newAnchorNode)
             addNote(newAnchorNode!!)
         }
     }
@@ -172,6 +173,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
 
+        val place = currentLocation
+        this.places?.add(place)
+        val placeNode = PlaceNode(this, place)
+        placeNode.setParent(anchorNode)
+        placeNode.localPosition = Vector3(0f, 1f, 0f)
+        placeNode.setOnTapListener { _, _ ->
+            showInfoWindow(place, anchorNode)
+        }
 //        val placeNode = PlaceNode(this, null)
 
     }
@@ -194,41 +203,53 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Add the place in AR
             val placeNode = PlaceNode(this, place)
             placeNode.setParent(anchorNode)
-            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.latLng)
+            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.geometry.location.latLng)
             placeNode.setOnTapListener { _, _ ->
-                showInfoWindow(place)
+                showInfoWindow(place, anchorNode)
             }
         }
     }
 
-    private fun showInfoWindow(place: Place) {
+    private fun showInfoWindow(place: Place, anchorNode: AnchorNode) {
         // Show in AR
-        val matchingPlaceNode = anchorNode?.children?.filter {
+        currentPlaceNode = anchorNode?.children?.filter {
             it is PlaceNode
         }?.first {
             val otherPlace = (it as PlaceNode).place ?: return@first false
             return@first otherPlace == place
         } as? PlaceNode
-        matchingPlaceNode?.showInfoWindow()
+        startActivityForResult(Intent(this, EditActivity::class.java), 1)
 
     }
 
-    private fun getCurrentLocation(onSuccess: (Location) -> Unit) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            currentLocation = location
-            onSuccess(location)
-        }.addOnFailureListener {
-            Log.e(TAG, "Could not get location")
+    private fun getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
         }
+        LocationServices.getFusedLocationProviderClient(applicationContext)
+            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    currentLocation = Place("current", "ok", Geometry(GeometryLocation(it.result.latitude, it.result.longitude)))
+                } else {
+                    Log.e("PostActivity getFusedLocation", it.exception.toString())
+                }
+            }
     }
-
-    private fun getNearbyPlaces(location: Location) {
-        this.places = listOf(
-            Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),
-            Place("id1", "note2, wt", Geometry(GeometryLocation(lat=42.299268, lng=-83.717808)))
-        )
-    }
-
 
     private fun isSupportedDevice(): Boolean {
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -264,8 +285,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         )
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                val message = data?.getStringExtra("message")
+                currentPlaceNode
+                currentPlaceNode?.setText(message)
+            }
+        }
+    }
 }
 
-val Location.latLng: LatLng
-    get() = LatLng(this.latitude, this.longitude)
 
