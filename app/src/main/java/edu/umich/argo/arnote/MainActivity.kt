@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.codelabs.findnearbyplacesar
+package edu.umich.argo.arnote
 
 import android.Manifest
 import android.app.ActivityManager
@@ -23,50 +23,33 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import android.view.ActionMode
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
-import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
-import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.ux.TransformableNode
-import com.google.codelabs.findnearbyplacesar.api.NearbyPlacesResponse
-import com.google.codelabs.findnearbyplacesar.api.PlacesService
-import com.google.codelabs.findnearbyplacesar.ar.PlaceNode
-import com.google.codelabs.findnearbyplacesar.ar.PlacesArFragment
-import com.google.codelabs.findnearbyplacesar.model.Geometry
-import com.google.codelabs.findnearbyplacesar.model.GeometryLocation
-import com.google.codelabs.findnearbyplacesar.model.Place
-import com.google.codelabs.findnearbyplacesar.model.getPositionVector
+import edu.umich.argo.arnote.R
+import edu.umich.argo.arnote.ar.PlaceNode
+import edu.umich.argo.arnote.ar.PlacesArFragment
+import edu.umich.argo.arnote.model.Geometry
+import edu.umich.argo.arnote.model.GeometryLocation
+import edu.umich.argo.arnote.model.Place
+import edu.umich.argo.arnote.model.getPositionVector
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private val TAG = "MainActivity"
 
     private lateinit var arFragment: PlacesArFragment
-
-    // Location
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -82,7 +65,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
-
     private var currentPlaceNode: PlaceNode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,9 +76,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
 
-
         sensorManager = getSystemService()!!
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         this.places = mutableListOf(
             Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),

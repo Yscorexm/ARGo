@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.codelabs.findnearbyplacesar.api
+package edu.umich.argo.arnote.api
 
-import com.google.codelabs.findnearbyplacesar.model.Place
+import edu.umich.argo.arnote.model.Place
 import com.google.gson.annotations.SerializedName
 
 /**

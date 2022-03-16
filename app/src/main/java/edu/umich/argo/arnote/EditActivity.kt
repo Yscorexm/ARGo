@@ -1,10 +1,11 @@
-package com.google.codelabs.findnearbyplacesar
+package edu.umich.argo.arnote
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import edu.umich.argo.arnote.R
 
 class EditActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
