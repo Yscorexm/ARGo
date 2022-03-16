@@ -17,17 +17,20 @@ package edu.umich.argo.arnote.model
 import com.google.android.gms.maps.model.LatLng
 import com.google.ar.sceneform.math.Vector3
 import com.google.maps.android.ktx.utils.sphericalHeading
+import kotlinx.serialization.Serializable
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * A model describing details about a Place (location, name, type, etc.).
  */
+
+
 data class Place(
     val id: String,
     val name: String,
-    val lat: Double,
-    val lng: Double
+    val lat: String,
+    val lng: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Place) {
@@ -41,7 +44,7 @@ data class Place(
     }
 
     val latLng: LatLng
-        get() = LatLng(lat, lng)
+        get() = LatLng(lat.toDouble(), lng.toDouble())
 }
 
 fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
@@ -53,3 +56,12 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val z = r * cos(azimuth + heading).toFloat()
     return Vector3(x, y, z)
 }
+
+
+@Serializable
+class JsonPlace(
+    val id: String,
+    val name: String,
+    val lat: String,
+    val lng: String
+)
