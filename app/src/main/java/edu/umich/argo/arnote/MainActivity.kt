@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var anchorSelected: Boolean = false
     private var currentPlaceNode: PlaceNode? = null
+    private var newAnchorNode: AnchorNode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,25 +86,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
-            sensorManager.registerListener(
-                this,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
-            sensorManager.registerListener(
-                this,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
+//            sensorManager.registerListener(
+//                this,
+//                it,
+//                SensorManager.SENSOR_DELAY_NORMAL
+//            )
+//        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
+//            sensorManager.registerListener(
+//                this,
+//                it,
+//                SensorManager.SENSOR_DELAY_NORMAL
+//            )
+//        }
     }
 
     override fun onPause() {
         super.onPause()
-        sensorManager.unregisterListener(this)
+//        sensorManager.unregisterListener(this)
     }
 
     private fun setUpAr() {
@@ -143,20 +144,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun addNote(anchorNode: AnchorNode) {
-        val currentLocation = currentLocation
-        if (currentLocation == null) {
-            Log.w(TAG, "Location has not been determined yet")
-            return
-        }
-
-        val place = currentLocation
-        this.places?.add(place)
-        val placeNode = PlaceNode(this, place)
-        placeNode.setParent(anchorNode)
-        placeNode.localPosition = Vector3(0f, 1f, 0f)
-        placeNode.setOnTapListener { _, _ ->
-            showInfoWindow(place, anchorNode)
-        }
+        newAnchorNode = anchorNode
+        startActivityForResult(Intent(this, EditActivity::class.java), 2)
     }
 
 
@@ -266,8 +255,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 val message = data?.getStringExtra("message")
-                currentPlaceNode
                 currentPlaceNode?.setText(message)
+            }
+        } else if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                val message = data?.getStringExtra("message")?:""
+
+                newAnchorNode?.let {
+                    val currentLocation = currentLocation
+                    if (currentLocation == null) {
+                        Log.w(TAG, "Location has not been determined yet")
+                        return
+                    }
+                    val place = Place("ok", message, currentLocation.lat, currentLocation.lng)
+                    this.places?.add(place)
+                    val placeNode = PlaceNode(this, place)
+                    placeNode.setParent(it)
+                    placeNode.localPosition = Vector3(0f, 1f, 0f)
+                    placeNode.setOnTapListener { _, _ ->
+                        showInfoWindow(place, it)
+                    }
+                }
             }
         }
     }
