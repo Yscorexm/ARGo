@@ -26,7 +26,8 @@ import kotlin.math.sin
 data class Place(
     val id: String,
     val name: String,
-    val geometry: Geometry
+    val lat: Double,
+    val lng: Double
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Place) {
@@ -38,26 +39,17 @@ data class Place(
     override fun hashCode(): Int {
         return this.id.hashCode()
     }
+
+    val latLng: LatLng
+        get() = LatLng(lat, lng)
 }
 
 fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
-    val placeLatLng = this.geometry.location.latLng
+    val placeLatLng = this.latLng
     val heading = latLng.sphericalHeading(placeLatLng)
     val r = -2f
     val x = r * sin(azimuth + heading).toFloat()
     val y = 1f
     val z = r * cos(azimuth + heading).toFloat()
     return Vector3(x, y, z)
-}
-
-data class Geometry(
-    val location: GeometryLocation
-)
-
-data class GeometryLocation(
-    val lat: Double,
-    val lng: Double
-) {
-    val latLng: LatLng
-        get() = LatLng(lat, lng)
 }

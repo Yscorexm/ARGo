@@ -37,11 +37,8 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Vector3
-import edu.umich.argo.arnote.R
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
-import edu.umich.argo.arnote.model.Geometry
-import edu.umich.argo.arnote.model.GeometryLocation
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getPositionVector
 
@@ -79,8 +76,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService()!!
 
         this.places = mutableListOf(
-            Place("id0", "note1, balabala", Geometry(GeometryLocation(lat=42.3009473, lng=-83.73001909999999))),
-            Place("id1", "note2, wt", Geometry(GeometryLocation(lat=42.299268, lng=-83.717808)))
+            Place("id0", "note1, balabala", lat=42.3009473, lng=-83.73001909999999),
+            Place("id1", "note2, wt", lat=42.299268, lng=-83.717808)
         )
         getCurrentLocation()
         setUpAr()
@@ -160,8 +157,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         placeNode.setOnTapListener { _, _ ->
             showInfoWindow(place, anchorNode)
         }
-//        val placeNode = PlaceNode(this, null)
-
     }
 
 
@@ -182,7 +177,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Add the place in AR
             val placeNode = PlaceNode(this, place)
             placeNode.setParent(anchorNode)
-            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.geometry.location.latLng)
+            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.latLng)
             placeNode.setOnTapListener { _, _ ->
                 showInfoWindow(place, anchorNode)
             }
@@ -223,7 +218,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    currentLocation = Place("current", "ok", Geometry(GeometryLocation(it.result.latitude, it.result.longitude)))
+                    currentLocation = Place("current", "ok", it.result.latitude, it.result.longitude)
                 } else {
                     Log.e("PostActivity getFusedLocation", it.exception.toString())
                 }
