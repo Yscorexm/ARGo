@@ -181,7 +181,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         placeNode.setOnTapListener { _, _ ->
             showInfoWindow(place, anchorNode)
         }
-//        val placeNode = PlaceNode(this, null)
 
     }
 

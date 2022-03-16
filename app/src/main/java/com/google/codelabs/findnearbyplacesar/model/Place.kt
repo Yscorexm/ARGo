@@ -17,12 +17,14 @@ package com.google.codelabs.findnearbyplacesar.model
 import com.google.android.gms.maps.model.LatLng
 import com.google.ar.sceneform.math.Vector3
 import com.google.maps.android.ktx.utils.sphericalHeading
+import kotlinx.serialization.Serializable
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * A model describing details about a Place (location, name, type, etc.).
  */
+
 data class Place(
     val id: String,
     val name: String,
