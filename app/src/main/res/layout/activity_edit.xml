@@ -14,8 +14,8 @@
         android:layout_marginTop="20dp"
         android:ems="10"
         android:gravity="start|top"
+        android:hint="Write your note here"
         android:inputType="textMultiLine"
-        android:text="Write your note here"
         android:textColor="#8C8484"
         android:textSize="18sp" />
 

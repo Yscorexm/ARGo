@@ -15,10 +15,25 @@
 package edu.umich.argo.arnote.ar
 
 import android.Manifest
+import com.google.ar.core.Plane
+import com.google.ar.core.TrackingState
+import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.ux.ArFragment
 
 class PlacesArFragment : ArFragment() {
-
+    private var anchorSelected: Boolean = false
     override fun getAdditionalPermissions(): Array<String> =
         listOf(Manifest.permission.ACCESS_FINE_LOCATION).toTypedArray()
+
+    override fun onResume() {
+        super.onResume()
+        if (anchorSelected) {
+            planeDiscoveryController.hide()
+        }
+    }
+
+    fun setAnchored() {
+        //get the trackables to ensure planes are detected
+        anchorSelected=true
+    }
 }

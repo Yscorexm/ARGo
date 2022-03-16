@@ -126,7 +126,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             anchorNode = AnchorNode(anchor)
                             anchorNode?.setParent(arFragment.arSceneView.scene)
                             addPlaces(anchorNode!!)
-                            break
+                            arFragment.setAnchored()
+                            arFragment.arSceneView.scene.addOnUpdateListener{}
                         }
                     }
                 }
@@ -271,7 +272,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     this.places?.add(place)
                     val placeNode = PlaceNode(this, place)
                     placeNode.setParent(it)
-                    placeNode.localPosition = Vector3(0f, 1f, 0f)
+                    placeNode.localPosition = Vector3(0f, 0f, 0f)
                     placeNode.setOnTapListener { _, _ ->
                         showInfoWindow(place, it)
                     }
