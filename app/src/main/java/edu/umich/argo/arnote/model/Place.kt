@@ -14,6 +14,8 @@
 
 package edu.umich.argo.arnote.model
 
+import android.location.Location
+import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import com.google.ar.sceneform.math.Vector3
 import com.google.maps.android.ktx.utils.sphericalHeading
@@ -30,7 +32,11 @@ data class Place(
     val id: String,
     var name: String,
     val lat: String,
-    val lng: String
+    val lng: String,
+    val x: String,
+    val y: String,
+    val z: String,
+    val orientation: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Place) {
@@ -50,11 +56,29 @@ data class Place(
 fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val placeLatLng = this.latLng
     val heading = latLng.sphericalHeading(placeLatLng)
-    val r = -2f
-    val x = r * sin(azimuth + heading).toFloat()
+    val distance = getDistance(latLng)
+    val x1 = distance * sin(azimuth + heading).toFloat()
+    val z1 = distance * cos(azimuth + heading).toFloat()
+
+    val x2 = this.x.toFloat() * sin(this.orientation.toDouble()).toFloat()
+    val z2 = this.z.toFloat() * cos(this.orientation.toDouble()).toFloat()
+    val x = x1 + x2
     val y = 1f
-    val z = r * cos(azimuth + heading).toFloat()
+    val z = z1 + z2
+    Log.d("Place", this.orientation)
+    Log.d("Place", x1.toString() + " " + x2.toString() + " " + distance.toString())
+    Log.d("Place", Vector3(x, y, z).toString())
     return Vector3(x, y, z)
+}
+
+fun Place.getDistance(latLng: LatLng): Float {
+    val startLocation = Location("Start")
+    startLocation.latitude = this.latLng.latitude
+    startLocation.longitude = this.latLng.longitude
+    val endLocation = Location("end")
+    endLocation.latitude = latLng.latitude
+    endLocation.longitude = latLng.longitude
+    return startLocation.distanceTo(endLocation)
 }
 
 
@@ -63,5 +87,9 @@ class JsonPlace(
     val id: String,
     var name: String,
     val lat: String,
-    val lng: String
+    val lng: String,
+    val x: String,
+    val y: String,
+    val z: String,
+    val orientation: String
 )
