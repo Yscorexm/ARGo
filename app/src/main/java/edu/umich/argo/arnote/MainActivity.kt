@@ -49,6 +49,7 @@ import edu.umich.argo.arnote.ar.NoteStore.loadNote
 import edu.umich.argo.arnote.ar.NoteStore.storeSize
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
+import edu.umich.argo.arnote.model.JsonPlace
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getPositionVector
 
@@ -294,7 +295,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val otherPlace = (it as PlaceNode).place ?: return@first false
             return@first otherPlace == place
         } as? PlaceNode
-        editLauncher.launch(Intent(this, EditActivity::class.java))
+        val intent = Intent(this, EditActivity::class.java)
+        intent.putExtra("placeId", place.id)
+        editLauncher.launch(intent)
     }
 
     private fun getCurrentLocation() {

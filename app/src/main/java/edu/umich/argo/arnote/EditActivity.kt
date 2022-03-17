@@ -5,16 +5,32 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import edu.umich.argo.arnote.ar.NoteStore.getNote
+import edu.umich.argo.arnote.model.Place
+
 
 class EditActivity : AppCompatActivity() {
-    lateinit var toolbar: Toolbar
+    private lateinit var toolbar: Toolbar
+    private lateinit var text: EditText
+    private var place: Place? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit)
         toolbar = findViewById(R.id.toolbar)
+        text = findViewById(R.id.message)
         initToolbar()
+        val placeId = intent.extras?.getString("placeId")
+        placeId?.let {
+            val places = getNote()
+            place = places.filter {
+                it.id == placeId
+            }.first()
+            text.hint = place?.name
+            text.setText(place?.name, TextView.BufferType.EDITABLE)
+        }
     }
 
     private fun initToolbar() {
