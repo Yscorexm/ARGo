@@ -51,6 +51,7 @@ import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getPositionVector
+import java.lang.Math.sqrt
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -159,6 +160,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 //        }
         if (anchorNode != null) {
             if (!anchorNode?.isTracking!!) {
+                anchorSelected = false
                 setUpAr()
             }
         }
@@ -185,12 +187,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             //Hide the plane discovery helper animation
                             // arFragment.planeDiscoveryController.hide()
                             val anchor = plane.createAnchor(plane.centerPose)
+
+                            val x = anchor.pose.tx()
+                            val y = anchor.pose.ty()
+                            val z = anchor.pose.tz()
+                            val distance = kotlin.math.sqrt((x * x + y * y + z * z).toDouble())
+                            Log.d(TAG, distance.toString())
+                            if (distance > 50) {
+                                continue
+                            }
                             anchorSelected = true
                             anchorNode = AnchorNode(anchor)
                             anchorNode?.setParent(arFragment.arSceneView.scene)
                             addPlaces(anchorNode!!)
                             arFragment.setAnchored()
-                            arFragment.arSceneView.scene.addOnUpdateListener{}
+//                            break
                         }
                     }
                 }
