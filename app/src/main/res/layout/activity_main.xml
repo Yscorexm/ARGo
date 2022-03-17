@@ -61,9 +61,10 @@
         android:id="@+id/itembutton"
         android:layout_width="120dp"
         android:layout_height="52dp"
-        android:backgroundTint="?attr/colorPrimary"
         android:layout_marginBottom="12dp"
+        android:backgroundTint="?attr/colorPrimary"
         android:text="@string/item_based"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/gpsbutton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -74,6 +75,7 @@
         android:layout_height="52dp"
         android:backgroundTint="?attr/colorPrimary"
         android:text="@string/gps_based"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/floatingActionButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

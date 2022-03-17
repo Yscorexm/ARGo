@@ -23,4 +23,5 @@
     <string name="item_based">Item-based</string>
     <string name="sample_note">Sample note</string>
     <string name="noteImage">qwq</string>
+    <string name="import_note">Import</string>
 </resources>
