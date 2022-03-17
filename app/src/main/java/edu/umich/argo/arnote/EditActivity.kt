@@ -15,6 +15,7 @@ import edu.umich.argo.arnote.model.Place
 class EditActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var text: EditText
+    private lateinit var shareButton: View
     private var place: Place? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,14 +23,18 @@ class EditActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         text = findViewById(R.id.message)
         initToolbar()
+        shareButton = findViewById(R.id.action_share)
         val placeId = intent.extras?.getString("placeId")
         placeId?.let {
+            shareButton.isEnabled = true
             val places = getNote()
             place = places.filter {
                 it.id == placeId
             }.first()
             text.hint = place?.name
             text.setText(place?.name, TextView.BufferType.EDITABLE)
+        }?: let {
+            shareButton.isEnabled = false
         }
     }
 
