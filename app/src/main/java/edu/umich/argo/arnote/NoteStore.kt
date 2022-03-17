@@ -45,7 +45,11 @@ object NoteStore {
             id = place.id,
             name = place.name,
             lat = place.lat,
-            lng = place.lng
+            lng = place.lng,
+            x = place.x,
+            y = place.y,
+            z = place.z,
+            orientation = place.orientation
         )
         )
         this.notes.add(place)
@@ -78,7 +82,11 @@ object NoteStore {
                     id = noteEntry.get("id").toString(),
                     name = noteEntry.get("name").toString(),
                     lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString()
+                    lng = noteEntry.get("lng").toString(),
+                    x = noteEntry.get("x").toString(),
+                    y = noteEntry.get("y").toString(),
+                    z = noteEntry.get("z").toString(),
+                    orientation = noteEntry.get("orientation").toString(),
                 ))
             }
             if (noteEntry != null) {
@@ -86,7 +94,11 @@ object NoteStore {
                     id = noteEntry.get("id").toString(),
                     name = noteEntry.get("name").toString(),
                     lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString()
+                    lng = noteEntry.get("lng").toString(),
+                    x = noteEntry.get("x").toString(),
+                    y = noteEntry.get("y").toString(),
+                    z = noteEntry.get("z").toString(),
+                    orientation = noteEntry.get("orientation").toString(),
                 ))
             }
         }
