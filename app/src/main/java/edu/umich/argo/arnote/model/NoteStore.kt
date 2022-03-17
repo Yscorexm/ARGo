@@ -1,9 +1,7 @@
-package edu.umich.argo.arnote.ar
+package edu.umich.argo.arnote.model
 
 import android.content.Context
 import com.google.gson.Gson
-import edu.umich.argo.arnote.model.JsonPlace
-import edu.umich.argo.arnote.model.Place
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
@@ -33,17 +31,17 @@ object NoteStore {
     }
 
     fun dumpNote(context: Context) {
-        val jsonList = Json.encodeToString(this._notes)
+        val jsonList = Json.encodeToString(_notes)
         context.openFileOutput(gpsFilePath, Context.MODE_PRIVATE).use {
             it.write(jsonList.toByteArray())
         }
     }
 
     fun addNoteToStore(place: Place) {
-        this._notes.add(
+        _notes.add(
             JsonPlace(
             id = place.id,
-            name = place.name,
+            message = place.name,
             lat = place.lat,
             lng = place.lng,
             x = place.x,
@@ -52,7 +50,7 @@ object NoteStore {
             orientation = place.orientation
         )
         )
-        this.notes.add(place)
+        notes.add(place)
     }
 
     fun editNote(place: Place?, message: String) {
@@ -60,8 +58,8 @@ object NoteStore {
         for (i in 0 until notes.size) {
             if (targetId != null) {
                 if (i == targetId.toInt()) {
-                    this.notes[i].name = message
-                    this._notes[i].name = message
+                    notes[i].name = message
+                    _notes[i].message = message
                 }
             }
         }
@@ -78,9 +76,9 @@ object NoteStore {
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
-                this._notes.add(JsonPlace(
+                _notes.add(JsonPlace(
                     id = noteEntry.get("id").toString(),
-                    name = noteEntry.get("name").toString(),
+                    message = noteEntry.get("name").toString(),
                     lat = noteEntry.get("lat").toString(),
                     lng = noteEntry.get("lng").toString(),
                     x = noteEntry.get("x").toString(),
@@ -90,7 +88,7 @@ object NoteStore {
                 ))
             }
             if (noteEntry != null) {
-                this.notes.add(Place(
+                notes.add(Place(
                     id = noteEntry.get("id").toString(),
                     name = noteEntry.get("name").toString(),
                     lat = noteEntry.get("lat").toString(),
@@ -105,7 +103,7 @@ object NoteStore {
     }
 
     fun getNote(): MutableList<Place> {
-        return this.notes
+        return notes
     }
 
 }

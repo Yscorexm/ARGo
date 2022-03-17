@@ -41,18 +41,17 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Vector3
-import edu.umich.argo.arnote.ar.NoteStore.addNoteToStore
-import edu.umich.argo.arnote.ar.NoteStore.dumpNote
-import edu.umich.argo.arnote.ar.NoteStore.editNote
-import edu.umich.argo.arnote.ar.NoteStore.getNote
-import edu.umich.argo.arnote.ar.NoteStore.loadNote
-import edu.umich.argo.arnote.ar.NoteStore.storeSize
+import edu.umich.argo.arnote.model.NoteStore.addNoteToStore
+import edu.umich.argo.arnote.model.NoteStore.dumpNote
+import edu.umich.argo.arnote.model.NoteStore.editNote
+import edu.umich.argo.arnote.model.NoteStore.getNote
+import edu.umich.argo.arnote.model.NoteStore.loadNote
+import edu.umich.argo.arnote.model.NoteStore.storeSize
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
-import java.lang.Math.sqrt
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {

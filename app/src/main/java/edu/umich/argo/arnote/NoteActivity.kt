@@ -3,11 +3,9 @@ package edu.umich.argo.arnote
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ListView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import edu.umich.argo.arnote.ar.NoteStore
 import edu.umich.argo.arnote.model.NoteListAdapter
-import edu.umich.argo.arnote.ar.NoteStore.getNote
+import edu.umich.argo.arnote.model.NoteStore.getNote
 
 class NoteActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar

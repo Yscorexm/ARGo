@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import edu.umich.argo.arnote.R
-import edu.umich.argo.arnote.ar.PlaceNode
 import android.graphics.Color
 import android.widget.ImageView
 import android.widget.TextView

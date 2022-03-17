@@ -85,7 +85,7 @@ fun Place.getDistance(latLng: LatLng): Float {
 @Serializable
 class JsonPlace(
     val id: String,
-    var name: String,
+    var message: String,
     val lat: String,
     val lng: String,
     val x: String,
