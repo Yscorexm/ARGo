@@ -28,6 +28,7 @@
     </ListView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/import_box"
         android:layout_width="240dp"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="#FED667"
@@ -51,7 +52,7 @@
             app:layout_constraintTop_toBottomOf="parent" />
 
         <Button
-            android:id="@+id/childImport"
+            android:id="@+id/child_import"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="75dp"
@@ -73,6 +74,7 @@
         android:backgroundTint="?attr/colorPrimary"
         android:text="@string/import_note"
         android:textSize="20sp"
+        android:onClick="importNote"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
