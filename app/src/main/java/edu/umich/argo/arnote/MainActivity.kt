@@ -30,17 +30,16 @@ import android.util.Log
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import com.google.ar.sceneform.AnchorNode
@@ -64,6 +63,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var arFragment: PlacesArFragment
     private lateinit var toolbar: Toolbar
     private lateinit var addButton: View
+    private lateinit var itemButton: View
+    private lateinit var gpsButton: View
     private lateinit var createLauncher: ActivityResultLauncher<Intent>
     private lateinit var editLauncher: ActivityResultLauncher<Intent>
     private lateinit var listLauncher: ActivityResultLauncher<Intent>
@@ -96,18 +97,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService()!!
         toolbar = findViewById(R.id.toolbar)
         initToolbar()
-        addButton = findViewById<FloatingActionButton>(R.id.floatingActionButton)
-        addButton.setOnClickListener {
-            arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
-                // Create anchor
-                val anchor = hitResult.createAnchor()
-                val newAnchorNode = AnchorNode(anchor)
-                newAnchorNode?.setParent(arFragment.arSceneView.scene)
-                otherAnchorNodes.add(newAnchorNode)
-                addNote(newAnchorNode!!)
-            }
-            it.visibility = INVISIBLE
-        }
+        addButton = findViewById(R.id.floatingActionButton)
+        itemButton = findViewById(R.id.itembutton)
+        gpsButton = findViewById(R.id.gpsbutton)
+        itemButton.visibility = INVISIBLE
+        gpsButton.visibility = INVISIBLE
+        setButtons()
 
         loadNote(applicationContext)
         val places = getNote()
@@ -178,6 +173,29 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         toolbar.inflateMenu(R.menu.mainmenu)
     }
 
+    private fun setButtons() {
+        addButton.setOnClickListener {
+            it.visibility = INVISIBLE
+            itemButton.visibility = VISIBLE
+            gpsButton.visibility = VISIBLE
+        }
+        itemButton.setOnClickListener {
+
+        }
+        gpsButton.setOnClickListener {
+            arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
+                // Create anchor
+                val anchor = hitResult.createAnchor()
+                val newAnchorNode = AnchorNode(anchor)
+                newAnchorNode?.setParent(arFragment.arSceneView.scene)
+                otherAnchorNodes.add(newAnchorNode)
+                addNote(newAnchorNode!!)
+            }
+            itemButton.visibility = INVISIBLE
+            gpsButton.visibility = INVISIBLE
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -197,6 +215,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 //        }
         arFragment.setOnTapArPlaneListener(null)
         addButton.visibility = VISIBLE
+        itemButton.visibility = INVISIBLE
+        gpsButton.visibility = INVISIBLE
         if (anchorNode != null) {
             if (!anchorNode?.isTracking!!) {
                 setUpAr()

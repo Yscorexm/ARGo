@@ -19,4 +19,6 @@
   <string name="share">share</string>
   <string name="save">Save</string>
   <string name="default_message">Write your note here</string>
+  <string name="gps_based">GPS-based</string>
+  <string name="item_based">Item-based</string>
 </resources>
