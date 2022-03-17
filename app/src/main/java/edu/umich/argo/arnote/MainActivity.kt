@@ -31,6 +31,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
 import com.google.android.gms.location.LocationRequest
@@ -56,9 +57,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private val TAG = "MainActivity"
 
     private lateinit var arFragment: PlacesArFragment
-
+    lateinit var toolbar: Toolbar
     private lateinit var createLauncher: ActivityResultLauncher<Intent>
     private lateinit var editLauncher: ActivityResultLauncher<Intent>
+    private lateinit var listLauncher: ActivityResultLauncher<Intent>
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -69,7 +71,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var anchorNode: AnchorNode? = null
     private var otherAnchorNodes = mutableListOf<AnchorNode>()
-    private var markers: MutableList<Marker> = emptyList<Marker>().toMutableList()
     private var currentLocation: Place? = null
 
     private var anchorSelected: Boolean = false
@@ -82,15 +83,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
         setContentView(R.layout.activity_main)
-
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            results.forEach {
-                if (!it.value) {
-                    Toast.makeText(this, "Location access denied", Toast.LENGTH_LONG).show()
-                    finish()
-                }
-            }
-        }.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        getPermission()
+        getCurrentLocation()
+        createLaunchers()
+        toolbar = findViewById(R.id.toolbar)
+        initToolbar()
 
         arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
         sensorManager = getSystemService()!!
@@ -106,8 +103,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             )
 
         }
+        setUpAr()
+    }
 
-        getCurrentLocation()
+    private fun getPermission() {
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+            results.forEach {
+                if (!it.value) {
+                    Toast.makeText(this, "Location access denied", Toast.LENGTH_LONG).show()
+                    finish()
+                }
+            }
+        }.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+
+    private fun createLaunchers() {
         createLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")?:""
@@ -132,8 +142,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 currentPlaceNode?.setText(message)
             }
         }
-        setUpAr()
+        listLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+
+        }
     }
+
+    private fun initToolbar() {
+        toolbar.title = "ARGo"
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
+        toolbar.setNavigationOnClickListener {
+            // change to listActivity
+            listLauncher.launch(Intent(this, EditActivity::class.java))
+        }
+        toolbar.inflateMenu(R.menu.mainmenu)
+    }
+
 
     override fun onResume() {
         super.onResume()

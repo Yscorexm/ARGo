@@ -58,13 +58,11 @@
 
         <activity
             android:name="edu.umich.argo.arnote.EditActivity"
-            android:label="Edit"
             android:parentActivityName="edu.umich.argo.arnote.MainActivity" />
 
         <activity
             android:name="edu.umich.argo.arnote.MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
