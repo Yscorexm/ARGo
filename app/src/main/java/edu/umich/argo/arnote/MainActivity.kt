@@ -17,10 +17,8 @@ package edu.umich.argo.arnote
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -30,7 +28,6 @@ import android.util.Log
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -168,9 +165,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
         toolbar.setNavigationOnClickListener {
             // change to listActivity
-            listLauncher.launch(Intent(this, EditActivity::class.java))
+            listLauncher.launch(Intent(this, NoteActivity::class.java))
         }
-        toolbar.inflateMenu(R.menu.mainmenu)
+        toolbar.inflateMenu(R.menu.plainmenu)
     }
 
     private fun setButtons() {
