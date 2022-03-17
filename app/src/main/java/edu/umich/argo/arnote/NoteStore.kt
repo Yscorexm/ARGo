@@ -51,6 +51,22 @@ object NoteStore {
         this.notes.add(place)
     }
 
+    fun editNote(place: Place?, message: String) {
+        val targetId = place?.id
+        for (i in 0 until notes.size) {
+            if (targetId != null) {
+                if (i == targetId.toInt()) {
+                    this.notes[i].name = message
+                    this._notes[i].name = message
+                }
+            }
+        }
+    }
+
+    fun storeSize(): Int {
+        return notes.size
+    }
+
     fun loadNote(context: Context) {
         val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)

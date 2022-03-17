@@ -28,7 +28,7 @@ import kotlin.math.sin
 
 data class Place(
     val id: String,
-    val name: String,
+    var name: String,
     val lat: String,
     val lng: String
 ) {
@@ -61,7 +61,7 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
 @Serializable
 class JsonPlace(
     val id: String,
-    val name: String,
+    var name: String,
     val lat: String,
     val lng: String
 )
