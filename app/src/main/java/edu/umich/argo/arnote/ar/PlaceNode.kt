@@ -44,9 +44,10 @@ class PlaceNode(
             .setView(context, R.layout.text_card_view)
             .build()    
             .thenAccept { renderable ->
+                renderable.isShadowCaster = false
+                renderable.isShadowReceiver = false
                 setRenderable(renderable)
                 placeRenderable = renderable
-
                 place?.let {
                     textViewPlace = renderable.view.findViewById(R.id.text_card_view)
                     textViewPlace?.text = it.name
