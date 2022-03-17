@@ -27,7 +27,7 @@ class PlaceNode(
 ) : Node() {
 
     private var placeRenderable: ViewRenderable? = null
-    private var textViewPlace: TextView? = null
+    var textViewPlace: TextView? = null
 
     override fun onActivate() {
         super.onActivate()
