@@ -78,7 +78,9 @@ fun Place.getDistance(latLng: LatLng): Float {
     val endLocation = Location("end")
     endLocation.latitude = latLng.latitude
     endLocation.longitude = latLng.longitude
-    return startLocation.distanceTo(endLocation)
+    val distance = startLocation.distanceTo(endLocation)
+    Log.d("Place", distance.toString())
+    return distance
 }
 
 
