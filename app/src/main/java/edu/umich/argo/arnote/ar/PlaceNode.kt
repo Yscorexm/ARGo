@@ -50,7 +50,7 @@ class PlaceNode(
                 placeRenderable = renderable
                 place?.let {
                     textViewPlace = renderable.view.findViewById(R.id.text_card_view)
-                    textViewPlace?.text = it.name
+                    textViewPlace?.text = it.message
                 }
             }
     }

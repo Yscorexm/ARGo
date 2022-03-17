@@ -8,8 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import edu.umich.argo.arnote.ar.NoteStore.getNote
-import edu.umich.argo.arnote.ar.NoteStore.postNote
+import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.Place
 
 
@@ -32,8 +31,8 @@ class EditActivity : AppCompatActivity() {
             place = places.filter {
                 it.id == placeId
             }.first()
-            text.hint = place?.name
-            text.setText(place?.name, TextView.BufferType.EDITABLE)
+            text.hint = place?.message
+            text.setText(place?.message, TextView.BufferType.EDITABLE)
         }?: let {
             shareButton.isEnabled = false
         }
@@ -48,7 +47,7 @@ class EditActivity : AppCompatActivity() {
         toolbar.inflateMenu(R.menu.editmenu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.action_share -> place?.let { it -> postNote(applicationContext, it) }
+                R.id.action_share -> Toast.makeText(this, "Share", Toast.LENGTH_LONG).show()
             }
             true
         }
