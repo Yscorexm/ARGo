@@ -1,11 +1,16 @@
 package edu.umich.argo.arnote.ar
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import edu.umich.argo.arnote.model.JsonPlace
 import edu.umich.argo.arnote.model.Place
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley.newRequestQueue
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -15,6 +20,9 @@ object NoteStore {
     var _notes = mutableListOf<JsonPlace>()
 
     private const val gpsFilePath = "gps_notes.json"
+    private lateinit var queue: RequestQueue
+    private const val serverUrl = "https://18.216.173.236/getnote/"
+
 
     private fun file2JsonStr(context: Context): String? {
         val stringBuilder = StringBuilder()
@@ -108,4 +116,25 @@ object NoteStore {
         return this.notes
     }
 
+    fun postNote(context: Context, place: Place) {
+        val jsonObj = mapOf(
+            "message" to place.name,
+            "lat" to place.lat,
+            "lng" to place.lng,
+            "x" to place.x,
+            "y" to place.y,
+            "z" to place.z
+        )
+        val postRequest = JsonObjectRequest(
+            Request.Method.POST,
+            serverUrl+"postnoteplace/", JSONObject(jsonObj),
+            { Log.d("postNote", "note posted!") },
+            { error -> Log.e("postNote", error.localizedMessage ?: "JsonObjectRequest error") }
+        )
+
+        if (!this::queue.isInitialized) {
+            queue = newRequestQueue(context)
+        }
+        queue.add(postRequest)
+    }
 }

@@ -6,11 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import edu.umich.argo.arnote.R
-import edu.umich.argo.arnote.ar.PlaceNode
 import android.graphics.Color
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import edu.umich.argo.arnote.ar.NoteStore.postNote
 
 class NoteListAdapter(context: Context, users: MutableList<Place>) :
     ArrayAdapter<Place?>(context, 0, users as List<Place?>) {
@@ -26,7 +26,7 @@ class NoteListAdapter(context: Context, users: MutableList<Place>) :
             iView.setImageResource(R.mipmap.pin_full_color)
             rowView.setBackgroundColor(Color.parseColor(if (position % 2 == 0) "#E0E0E0" else "#EEEEEE"))
             share.setOnClickListener {
-
+                postNote(context, this)
             }
         }
         return rowView
