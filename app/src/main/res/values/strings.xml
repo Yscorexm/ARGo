@@ -21,4 +21,6 @@
     <string name="default_message">Write your note here</string>
     <string name="gps_based">GPS-based</string>
     <string name="item_based">Item-based</string>
+    <string name="sample_note">Sample note</string>
+    <string name="noteImage">qwq</string>
 </resources>
