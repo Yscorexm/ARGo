@@ -8,7 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import edu.umich.argo.arnote.ar.NoteStore.getNote
+import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.Place
 
 
@@ -31,8 +31,8 @@ class EditActivity : AppCompatActivity() {
             place = places.filter {
                 it.id == placeId
             }.first()
-            text.hint = place?.name
-            text.setText(place?.name, TextView.BufferType.EDITABLE)
+            text.hint = place?.message
+            text.setText(place?.message, TextView.BufferType.EDITABLE)
         }?: let {
             shareButton.isEnabled = false
         }

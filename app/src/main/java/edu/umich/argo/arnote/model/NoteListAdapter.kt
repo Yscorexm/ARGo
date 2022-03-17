@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import edu.umich.argo.arnote.R
-import edu.umich.argo.arnote.ar.PlaceNode
 import android.graphics.Color
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -22,7 +21,7 @@ class NoteListAdapter(context: Context, users: MutableList<Place>) :
             val tView = rowView.findViewById<TextView>(R.id.tView)
             val iView = rowView.findViewById<ImageView>(R.id.iView)
             val share = rowView.findViewById<ImageButton>(R.id.imageButton)
-            tView.text = name
+            tView.text = message
             iView.setImageResource(R.mipmap.pin_full_color)
             rowView.setBackgroundColor(Color.parseColor(if (position % 2 == 0) "#E0E0E0" else "#EEEEEE"))
             share.setOnClickListener {
