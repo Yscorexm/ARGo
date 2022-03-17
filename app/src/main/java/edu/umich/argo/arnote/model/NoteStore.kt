@@ -82,6 +82,8 @@ object NoteStore {
         val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)
         val gson = Gson()
+        notes.clear()
+        _notes.clear()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
