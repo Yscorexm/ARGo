@@ -44,8 +44,10 @@ import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Vector3
 import edu.umich.argo.arnote.ar.NoteStore.addNoteToStore
 import edu.umich.argo.arnote.ar.NoteStore.dumpNote
+import edu.umich.argo.arnote.ar.NoteStore.editNote
 import edu.umich.argo.arnote.ar.NoteStore.getNote
 import edu.umich.argo.arnote.ar.NoteStore.loadNote
+import edu.umich.argo.arnote.ar.NoteStore.storeSize
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
@@ -96,10 +98,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val places = getNote()
         if (places?.size ?: 0 == 0) {
             addNoteToStore(
-                Place("id0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
+                Place("0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
             )
             addNoteToStore(
-                Place("id1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
+                Place("1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
             )
 
         }
@@ -123,7 +125,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 val message = it.data?.getStringExtra("message")?:""
 
                 currentLocation?.let {
-                    val place = Place("ok", message, it.lat, it.lng)
+
+                    val place = Place(storeSize().toString(), message, it.lat, it.lng)
                     addNoteToStore(place)
                     newAnchorNode?.let {
                         val placeNode = PlaceNode(this, place)
@@ -140,6 +143,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")
                 currentPlaceNode?.setText(message)
+                if (message != null) {
+                    editNote(currentPlaceNode?.place, message)
+                }
             }
         }
         listLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -174,6 +180,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 //                SensorManager.SENSOR_DELAY_NORMAL
 //            )
 //        }
+        if (anchorNode != null) {
+            if (!anchorNode?.isTracking!!) {
+                setUpAr()
+            }
+        }
     }
 
     override fun onPause() {
