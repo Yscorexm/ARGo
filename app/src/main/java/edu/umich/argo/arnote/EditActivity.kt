@@ -9,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import edu.umich.argo.arnote.model.NoteStore.getNote
+import edu.umich.argo.arnote.model.NoteStore.postNote
 import edu.umich.argo.arnote.model.Place
 
 
@@ -47,7 +48,7 @@ class EditActivity : AppCompatActivity() {
         toolbar.inflateMenu(R.menu.editmenu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.action_share -> Toast.makeText(this, "Share", Toast.LENGTH_LONG).show()
+                R.id.action_share -> place?.let { p -> postNote(applicationContext, p) }
             }
             true
         }

@@ -1,25 +1,26 @@
 package edu.umich.argo.arnote.model
 
+import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import com.google.gson.Gson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley.newRequestQueue
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import okhttp3.*
 
 object NoteStore {
     var notes = mutableListOf<Place>()
     var _notes = mutableListOf<JsonPlace>()
 
     private const val gpsFilePath = "gps_notes.json"
-    private lateinit var queue: RequestQueue
-    private const val serverUrl = "https://18.216.173.236/getnote/"
+    private val client = OkHttpClient()
+    private const val serverUrl = "https://18.216.173.236/"
 
 
     private fun file2JsonStr(context: Context): String? {
@@ -115,24 +116,38 @@ object NoteStore {
     }
 
     fun postNote(context: Context, place: Place) {
-        val jsonObj = mapOf(
-            "message" to place.name,
-            "lat" to place.lat,
-            "lng" to place.lng,
-            "x" to place.x,
-            "y" to place.y,
-            "z" to place.z
-        )
-        val postRequest = JsonObjectRequest(
-            Request.Method.POST,
-            serverUrl+"postnoteplace/", JSONObject(jsonObj),
-            { Log.d("postNote", "note posted!") },
-            { error -> Log.e("postNote", error.localizedMessage ?: "JsonObjectRequest error") }
-        )
+        val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("message", place.message)
+            .addFormDataPart("lat", place.lat)
+            .addFormDataPart("lng", place.lng)
+            .addFormDataPart("x", place.x)
+            .addFormDataPart("y", place.y)
+            .addFormDataPart("z", place.z)
 
-        if (!this::queue.isInitialized) {
-            queue = newRequestQueue(context)
-        }
-        queue.add(postRequest)
+        val request = Request.Builder()
+            .url(serverUrl+"postnoteplace/")
+            .post(mpFD.build())
+            .build()
+
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as Activity).runOnUiThread {
+                    Toast.makeText(context, "Share note fails!", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val id = JSONObject(response.body?.string() ?: "").getString("ID")
+                    (context as Activity).runOnUiThread {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip: ClipData = ClipData.newPlainText("id", id)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(context, "Url copied to clipboard!", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        })
     }
 }
