@@ -50,7 +50,9 @@ import edu.umich.argo.arnote.ar.NoteStore.storeSize
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.Place
+import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
+import java.lang.Math.sqrt
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -105,10 +107,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val places = getNote()
         if (places?.size ?: 0 == 0) {
             addNoteToStore(
-                Place("0", "note1, balabala", lat=(42.3009473).toString(), lng=(-83.73001909999999).toString()),
+                Place(
+                    "0",
+                    "note1, balabala",
+                    lat=(42.3009473).toString(),
+                    lng=(-83.73001909999999).toString(),
+                    x=(1.00).toString(),
+                    y=(1.00).toString(),
+                    z=(1.00).toString(),
+                    orientation = (0.00).toString()
+                ),
             )
             addNoteToStore(
-                Place("1", "note2, wt", lat=(42.299268).toString(), lng=(-83.717808).toString())
+                Place("1",
+                    "note2, wt",
+                    lat=(42.299268).toString(),
+                    lng=(-83.717808).toString(),
+                    x=(1.00).toString(),
+                    y=(1.00).toString(),
+                    z=(1.00).toString(),
+                    orientation = (0.00).toString()
+                )
             )
 
         }
@@ -132,13 +151,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 val message = it.data?.getStringExtra("message")?:""
 
                 currentLocation?.let {
-
-                    val place = Place(storeSize().toString(), message, it.lat, it.lng)
+                    val place = Place(
+                        storeSize().toString(),
+                        message,
+                        it.lat,
+                        it.lng,
+                        newAnchorNode?.anchor?.pose?.tx().toString(),
+                        newAnchorNode?.anchor?.pose?.ty().toString(),
+                        newAnchorNode?.anchor?.pose?.tz().toString(),
+                        orientationAngles[0].toString()
+                    )
+                    Log.d("Place", orientationAngles[0].toString())
                     addNoteToStore(place)
                     newAnchorNode?.let {
                         val placeNode = PlaceNode(this, place)
                         placeNode.setParent(it)
-                        placeNode.localPosition = Vector3(0f, 0f, 0f)
+                        placeNode.localPosition = Vector3(0f, 1f, 0f)
                         placeNode.setOnTapListener { _, _ ->
                             showInfoWindow(place, it)
                         }
@@ -210,15 +238,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 //                SensorManager.SENSOR_DELAY_NORMAL
 //            )
 //        }
+        arFragment.arSceneView.session?.resume()
         arFragment.setOnTapArPlaneListener(null)
         addButton.visibility = VISIBLE
         itemButton.visibility = INVISIBLE
         gpsButton.visibility = INVISIBLE
-        if (anchorNode != null) {
-            if (!anchorNode?.isTracking!!) {
-                setUpAr()
-            }
-        }
+//        if (anchorNode != null) {
+//            if (!anchorNode?.isTracking!!) {
+//                anchorSelected = false
+//                setUpAr()
+//            }
+//        }
     }
 
     override fun onPause() {
@@ -242,12 +272,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             // Hide the plane discovery helper animation
                             // arFragment.planeDiscoveryController.hide()
                             val anchor = plane.createAnchor(plane.centerPose)
+
+                            val x = anchor.pose.tx()
+                            val y = anchor.pose.ty()
+                            val z = anchor.pose.tz()
+                            val distance = kotlin.math.sqrt((x * x + y * y + z * z).toDouble())
+                            Log.d(TAG, distance.toString())
+                            if (distance > 50) {
+                                continue
+                            }
                             anchorSelected = true
                             anchorNode = AnchorNode(anchor)
                             anchorNode?.setParent(arFragment.arSceneView.scene)
                             addPlaces(anchorNode!!)
                             arFragment.setAnchored()
-                            arFragment.arSceneView.scene.addOnUpdateListener{}
+                            break
                         }
                     }
                 }
@@ -278,6 +317,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         for (place in places) {
             // Add the place in AR
             val placeNode = PlaceNode(this, place)
+            if (placeNode.place != null) {
+                if (placeNode.place.getDistance(currentLocation.latLng) > 10.0) {
+                    continue
+                }
+            }
+
             placeNode.setParent(anchorNode)
             placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.latLng)
             placeNode.setOnTapListener { _, _ ->
@@ -302,7 +347,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    currentLocation = Place("current", "ok", it.result.latitude.toString(), it.result.longitude.toString())
+                    currentLocation = Place(
+                        "current",
+                        "ok",
+                        it.result.latitude.toString(),
+                        it.result.longitude.toString(),
+                        (0.00).toString(),
+                        (0.00).toString(),
+                        (0.00).toString(),
+                        (0.00).toString()
+                    )
                 } else {
                     Log.e("PostActivity getFusedLocation", it.exception.toString())
                 }
@@ -345,5 +399,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
 }
+
 
 
