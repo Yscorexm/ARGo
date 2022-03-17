@@ -42,5 +42,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/tView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tView"
-        app:srcCompat="@drawable/ic_baseline_share_24" />
+        app:srcCompat="@drawable/ic_baseline_share_24"
+        android:contentDescription="@string/noteImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>

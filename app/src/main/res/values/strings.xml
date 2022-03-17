@@ -24,4 +24,6 @@
     <string name="sample_note">Sample note</string>
     <string name="noteImage">qwq</string>
     <string name="import_note">Import</string>
+    <string name="longer_note">Longer sample text with multiple lines</string>
+    <string name="import_guide">paste the url here</string>
 </resources>

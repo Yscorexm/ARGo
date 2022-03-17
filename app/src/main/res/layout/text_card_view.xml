@@ -9,6 +9,6 @@
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="#80FED667"
-        android:text="Longer sample text with multiple lines" />
+        android:background="@color/colorTextBackground"
+        android:text="@string/longer_note" />
 </LinearLayout>

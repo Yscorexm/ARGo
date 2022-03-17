@@ -19,4 +19,5 @@
   <color name="colorPrimary">#FFC107</color>
   <color name="colorPrimaryDark">#3700B3</color>
   <color name="colorAccent">#FFC107</color>
+  <color name="colorTextBackground">#80FED667</color>
 </resources>
