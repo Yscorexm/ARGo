@@ -129,7 +129,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     orientation = (0.00).toString()
                 )
             )
-
         }
         setUpAr()
     }
