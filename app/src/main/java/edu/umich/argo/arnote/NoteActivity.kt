@@ -1,15 +1,17 @@
 package edu.umich.argo.arnote
 
 import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.widget.EditText
 import android.widget.ListView
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
 import edu.umich.argo.arnote.model.NoteListAdapter
-import edu.umich.argo.arnote.model.NoteStore
+import edu.umich.argo.arnote.model.NoteStore.addNoteByID
 import edu.umich.argo.arnote.model.NoteStore.getNote
 
 class NoteActivity : AppCompatActivity() {
@@ -18,6 +20,16 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var importButton: View
     private lateinit var cardView: CardView
     private lateinit var childImport: View
+    private lateinit var editView: EditText
+    private lateinit var noteListAdapter: NoteListAdapter
+
+    private val refreshTime:Long =500
+    private val mRunnable: Runnable = object : Runnable {
+        override fun run() {
+            noteListAdapter.notifyDataSetChanged()
+            noteListView.postDelayed(this, refreshTime)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,13 +39,15 @@ class NoteActivity : AppCompatActivity() {
         importButton = findViewById(R.id.importButton)
         cardView = findViewById(R.id.import_box)
         childImport = findViewById(R.id.child_import)
+        editView=findViewById(R.id.input_import)
         initToolbar()
         initNoteListView()
         initImports()
+        noteListView.postDelayed(mRunnable, refreshTime)
     }
     private fun initNoteListView(){
         val notes=getNote()
-        val noteListAdapter=NoteListAdapter(this,notes)
+        noteListAdapter=NoteListAdapter(this,notes)
         noteListView.adapter=noteListAdapter
     }
 
@@ -51,6 +65,10 @@ class NoteActivity : AppCompatActivity() {
         childImport.setOnClickListener {
             importButton.visibility = VISIBLE
             cardView.visibility = INVISIBLE
+            val id=editView.text
+            addNoteByID(id.toString()) {
+            }
+            editView.setText("")
         }
     }
 
@@ -58,4 +76,5 @@ class NoteActivity : AppCompatActivity() {
         view?.visibility = INVISIBLE
         cardView.visibility = VISIBLE
     }
+
 }

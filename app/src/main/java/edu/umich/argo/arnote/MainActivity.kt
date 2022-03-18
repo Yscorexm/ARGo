@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (places?.size ?: 0 == 0) {
             addNoteToStore(
                 Place(
-                    "0",
+                    storeSize().toString(),
                     "note1, balabala",
                     lat=(42.3009473).toString(),
                     lng=(-83.73001909999999).toString(),
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 ),
             )
             addNoteToStore(
-                Place("1",
+                Place(storeSize().toString(),
                     "note2, wt",
                     lat=(42.299268).toString(),
                     lng=(-83.717808).toString(),

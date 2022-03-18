@@ -6,22 +6,32 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
+import android.text.Editable
+import android.util.Log
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley.newRequestQueue
 import com.google.gson.Gson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.*
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import okhttp3.*
 
 object NoteStore {
+    private val TAG="NoteStore"
     var notes = mutableListOf<Place>()
     var _notes = mutableListOf<JsonPlace>()
+    private val nFields = 10
+
+
+    private const val serverUrl = "https://18.216.173.236/"
 
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
-    private const val serverUrl = "https://18.216.173.236/"
-
 
     private fun file2JsonStr(context: Context): String? {
         val stringBuilder = StringBuilder()
@@ -82,6 +92,8 @@ object NoteStore {
         val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)
         val gson = Gson()
+        notes.clear()
+        _notes.clear()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
@@ -149,5 +161,46 @@ object NoteStore {
                 }
             }
         })
+    }
+
+    fun addNoteByID(ID:String, completion: ()->Unit) {
+        val request = Request.Builder()
+            .url(serverUrl + "getnote/?ID="+ID)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e(TAG, "Failed GET request")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val chattsReceived = try {
+                        JSONObject(response.body?.string() ?: "").getJSONArray("notes")
+                    } catch (e: JSONException) {
+                        JSONArray()
+                    }
+                    val chattEntry = chattsReceived as JSONArray
+                    if (chattEntry.length() == nFields) {
+                        addNoteToStore(Place(id = storeSize().toString(),
+                            message = chattEntry[1].toString(),
+                            lat=chattEntry[2].toString(),
+                            lng=chattEntry[3].toString(),
+                            x=chattEntry[4].toString(),
+                            y=chattEntry[5].toString(),
+                            z=chattEntry[6].toString(),
+                            orientation = chattEntry[7].toString(),
+                        ))
+                    } else {
+                        Log.e(TAG,
+                            "Received unexpected number of fields: " + chattEntry.length()
+                                .toString() + " instead of " + nFields.toString()
+                        )
+                    }
+                }
+                completion()
+            }
+        })
+
     }
 }
