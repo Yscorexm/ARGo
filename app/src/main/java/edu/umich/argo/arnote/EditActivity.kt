@@ -19,6 +19,7 @@ class EditActivity : AppCompatActivity() {
     private lateinit var shareButton: View
     private var place: Place? = null
     override fun onCreate(savedInstanceState: Bundle?) {
+        // retrieve the note
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit)
         toolbar = findViewById(R.id.toolbar)
