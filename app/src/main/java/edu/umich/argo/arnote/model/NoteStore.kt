@@ -156,7 +156,7 @@ object NoteStore {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip: ClipData = ClipData.newPlainText("id", id)
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "Url copied to clipboard!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Uuid copied to clipboard!", Toast.LENGTH_LONG).show()
                     }
                 }
             }
