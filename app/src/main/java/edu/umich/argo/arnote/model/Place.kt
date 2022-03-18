@@ -27,7 +27,6 @@ import kotlin.math.sin
  * A model describing details about a Place (location, name, type, etc.).
  */
 
-
 data class Place(
     val id: String,
     var message: String,
@@ -82,7 +81,6 @@ fun Place.getDistance(latLng: LatLng): Float {
     Log.d("Place", distance.toString())
     return distance
 }
-
 
 @Serializable
 class JsonPlace(

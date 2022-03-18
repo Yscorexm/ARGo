@@ -345,6 +345,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun getCurrentLocation() {
+        //Get current location of the user
         LocationServices.getFusedLocationProviderClient(applicationContext)
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
