@@ -26,10 +26,7 @@ object NoteStore {
     var notes = mutableListOf<Place>()
     var _notes = mutableListOf<JsonPlace>()
     private val nFields = 10
-
-
     private const val serverUrl = "https://18.216.173.236/"
-
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
 
@@ -59,15 +56,15 @@ object NoteStore {
     fun addNoteToStore(place: Place) {
         _notes.add(
             JsonPlace(
-            id = place.id,
-            message = place.message,
-            lat = place.lat,
-            lng = place.lng,
-            x = place.x,
-            y = place.y,
-            z = place.z,
-            orientation = place.orientation
-        )
+                id = place.id,
+                message = place.message,
+                lat = place.lat,
+                lng = place.lng,
+                x = place.x,
+                y = place.y,
+                z = place.z,
+                orientation = place.orientation
+            )
         )
         notes.add(place)
     }
@@ -201,6 +198,5 @@ object NoteStore {
                 completion()
             }
         })
-
     }
 }

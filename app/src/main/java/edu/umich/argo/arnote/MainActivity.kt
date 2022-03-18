@@ -183,9 +183,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
             }
         }
-        listLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
-        }
+        listLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){}
     }
 
     private fun initToolbar() {
