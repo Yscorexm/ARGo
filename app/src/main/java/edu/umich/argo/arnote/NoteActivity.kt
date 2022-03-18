@@ -68,6 +68,7 @@ class NoteActivity : AppCompatActivity() {
             val id=editView.text
             addNoteByID(id.toString()) {
             }
+            editView.setText("")
         }
     }
 
