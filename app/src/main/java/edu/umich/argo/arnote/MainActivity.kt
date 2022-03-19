@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var arFragment: PlacesArFragment
     private lateinit var toolbar: Toolbar
+    private lateinit var toolbartitle: TextView
     private lateinit var addButton: View
     private lateinit var itemButton: View
     private lateinit var gpsButton: View
@@ -186,13 +188,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun initToolbar() {
-        toolbar.title = "ARGo"
+        toolbar.title = ""
         toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
         toolbar.setNavigationOnClickListener {
             // change to listActivity
             listLauncher.launch(Intent(this, NoteActivity::class.java))
         }
         toolbar.inflateMenu(R.menu.plainmenu)
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+        setSupportActionBar(toolbar)
+        toolbartitle.text="ARGo"
     }
 
     private fun setButtons() {
