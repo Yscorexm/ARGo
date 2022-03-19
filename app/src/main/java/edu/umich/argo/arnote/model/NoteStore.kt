@@ -21,6 +21,10 @@ import org.json.JSONObject
 import java.io.IOException
 import okhttp3.*
 
+/*
+Supports add note, edit note, load note
+*/
+
 object NoteStore {
     private val TAG="NoteStore"
     var notes = mutableListOf<Place>()
@@ -30,6 +34,7 @@ object NoteStore {
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
 
+    // transform all GPS info in "gps_notes.json" into jsonStr
     private fun file2JsonStr(context: Context): String? {
         val stringBuilder = StringBuilder()
         try {
@@ -46,6 +51,7 @@ object NoteStore {
         return null
     }
 
+    // store GPS information of all notes to "gps_notes.json"
     fun dumpNote(context: Context) {
         val jsonList = Json.encodeToString(_notes)
         context.openFileOutput(gpsFilePath, Context.MODE_PRIVATE).use {
@@ -124,6 +130,7 @@ object NoteStore {
         return notes
     }
 
+    // add a local place to backend
     fun postNote(context: Context, place: Place) {
         val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("message", place.message)
@@ -160,6 +167,7 @@ object NoteStore {
         })
     }
 
+    // retrieve a note from backend and add to local
     fun addNoteByID(ID:String, completion: ()->Unit) {
         val request = Request.Builder()
             .url(serverUrl + "getnote/?ID="+ID)

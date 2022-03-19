@@ -23,6 +23,7 @@ class NoteListAdapter(context: Context, users: MutableList<Place>) :
             iView.setImageResource(R.mipmap.pin_full_color)
             rowView.setBackgroundColor(Color.parseColor(if (position % 2 == 0) "#E0E0E0" else "#EEEEEE"))
             share.setOnClickListener {
+                // once a note is shared, upload the note to backend
                 postNote(context, this)
             }
         }
