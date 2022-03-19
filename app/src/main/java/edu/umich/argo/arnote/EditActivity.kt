@@ -15,6 +15,7 @@ import edu.umich.argo.arnote.model.Place
 
 class EditActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
+    private lateinit var toolbartitle: TextView
     private lateinit var text: EditText
     private lateinit var shareButton: View
     private var place: Place? = null
@@ -41,7 +42,7 @@ class EditActivity : AppCompatActivity() {
     }
 
     private fun initToolbar() {
-        toolbar.title = "ARGo"
+        toolbar.title = ""
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_ios_new_24)
         toolbar.setNavigationOnClickListener {
             finish()
@@ -53,6 +54,9 @@ class EditActivity : AppCompatActivity() {
             }
             true
         }
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+        setSupportActionBar(toolbar)
+        toolbartitle.text="ARGo"
     }
 
     fun saveNote(view: View?) {

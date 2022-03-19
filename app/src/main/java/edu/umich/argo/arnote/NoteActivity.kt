@@ -8,6 +8,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
 import edu.umich.argo.arnote.model.NoteListAdapter
@@ -16,6 +17,7 @@ import edu.umich.argo.arnote.model.NoteStore.getNote
 
 class NoteActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
+    private lateinit var toolbartitle: TextView
     private lateinit var noteListView: ListView
     private lateinit var importButton: View
     private lateinit var cardView: CardView
@@ -52,12 +54,15 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun initToolbar() {
-        toolbar.title = "ARGo"
+        toolbar.title = ""
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_ios_new_24)
         toolbar.setNavigationOnClickListener {
             finish()
         }
         toolbar.inflateMenu(R.menu.plainmenu)
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+        setSupportActionBar(toolbar)
+        toolbartitle.text="ARGo"
     }
 
     private fun initImports() {

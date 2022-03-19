@@ -41,7 +41,6 @@
         android:layout_gravity="center" />
     </androidx.appcompat.widget.Toolbar>
 
-
     <fragment
         android:id="@+id/ar_fragment"
         android:name="edu.umich.argo.arnote.ar.PlacesArFragment"
