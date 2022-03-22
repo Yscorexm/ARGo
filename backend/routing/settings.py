@@ -77,9 +77,9 @@ WSGI_APPLICATION = 'routing.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'chatterdb',
-        'USER': 'chatter',
-        'PASSWORD': 'chattchatt',
+        'NAME': 'argo',
+        'USER': 'yxx',
+        'PASSWORD': 'yxxyxxyxx',
         'HOST': 'localhost',
         'PORT': '',
     }
