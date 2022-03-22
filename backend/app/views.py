@@ -2,6 +2,13 @@ from django.shortcuts import render
 from django.db import connection
 from django.http import JsonResponse, HttpResponse
 
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+import os, time
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+
 @csrf_exempt
 def postnoteplace(request):
     if request.method != 'POST':
