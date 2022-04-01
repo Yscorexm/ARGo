@@ -43,6 +43,8 @@ class EditActivity : AppCompatActivity() {
 
     private fun initToolbar() {
         toolbar.title = ""
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+        toolbartitle.text="ARGo"
         toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_ios_new_24)
         toolbar.setNavigationOnClickListener {
             finish()
@@ -54,9 +56,6 @@ class EditActivity : AppCompatActivity() {
             }
             true
         }
-        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
-        setSupportActionBar(toolbar)
-        toolbartitle.text="ARGo"
     }
 
     fun saveNote(view: View?) {

@@ -189,15 +189,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun initToolbar() {
         toolbar.title = ""
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+//        setSupportActionBar(toolbar)
+        toolbartitle.text="ARGo"
         toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
         toolbar.setNavigationOnClickListener {
             // change to listActivity
             listLauncher.launch(Intent(this, NoteActivity::class.java))
         }
         toolbar.inflateMenu(R.menu.plainmenu)
-        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
-        setSupportActionBar(toolbar)
-        toolbartitle.text="ARGo"
     }
 
     private fun setButtons() {
