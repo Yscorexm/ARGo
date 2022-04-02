@@ -15,10 +15,14 @@
 package edu.umich.argo.arnote.ar
 
 import android.Manifest
-import com.google.ar.core.Plane
-import com.google.ar.core.TrackingState
-import com.google.ar.sceneform.AnchorNode
+import android.util.Log
+import com.google.ar.core.Config
+import com.google.ar.core.Session
 import com.google.ar.sceneform.ux.ArFragment
+import edu.umich.argo.arnote.MainActivity
+
+
+
 
 class PlacesArFragment : ArFragment() {
     private var anchorSelected: Boolean = false
@@ -35,5 +39,18 @@ class PlacesArFragment : ArFragment() {
     fun setAnchored() {
         //get the trackables to ensure planes are detected
         anchorSelected=true
+    }
+
+    override fun getSessionConfiguration(session: Session): Config {
+//        planeDiscoveryController.setInstructionView(null)
+        val config = Config(session)
+        config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE)
+        session.configure(config)
+        arSceneView.setupSession(session)
+        if ((activity as MainActivity).setupAugmentedImagesDB(config, session))
+            Log.d("arcoreimg_db", "success")
+        else
+            Log.e("arcoreimg_db","faliure setting up db")
+        return config
     }
 }

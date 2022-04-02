@@ -19,6 +19,9 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import com.google.ar.sceneform.Node
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -38,22 +41,28 @@ import androidx.core.content.getSystemService
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.ar.core.Plane
-import com.google.ar.core.TrackingState
+import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.Renderable
+import com.google.ar.sceneform.rendering.ViewRenderable
+import com.google.ar.sceneform.ux.ArFragment
+import com.google.ar.sceneform.ux.TransformableNode
+import edu.umich.argo.arnote.ar.PlaceNode
+import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.NoteStore.addNoteToStore
 import edu.umich.argo.arnote.model.NoteStore.dumpNote
 import edu.umich.argo.arnote.model.NoteStore.editNote
 import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.NoteStore.loadNote
 import edu.umich.argo.arnote.model.NoteStore.storeSize
-import edu.umich.argo.arnote.ar.PlaceNode
-import edu.umich.argo.arnote.ar.PlacesArFragment
-import edu.umich.argo.arnote.model.JsonPlace
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
+import java.io.IOException
+
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -69,6 +78,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var createLauncher: ActivityResultLauncher<Intent>
     private lateinit var editLauncher: ActivityResultLauncher<Intent>
     private lateinit var listLauncher: ActivityResultLauncher<Intent>
+    private lateinit var session: Session
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -84,6 +94,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var anchorSelected: Boolean = false
     private var newAnchorNode: AnchorNode? = null
     private var currentPlaceNode: PlaceNode? = null
+
+    // augmented images
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -189,9 +202,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun initToolbar() {
         toolbar.title = ""
-        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+//        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
 //        setSupportActionBar(toolbar)
-        toolbartitle.text="ARGo"
+//        toolbartitle.text="ARGo"
         toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
         toolbar.setNavigationOnClickListener {
             // change to listActivity
@@ -262,14 +275,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun setUpAr() {
         arFragment.arSceneView.scene.addOnUpdateListener { frameTime ->
             val frame = arFragment.arSceneView.arFrame
+            // get the trackables to ensure planes are detected
             if (frame != null) {
-                //get the trackables to ensure planes are detected
                 if (!anchorSelected) {
                     val planes = frame.getUpdatedTrackables(Plane::class.java).iterator()
                     while(planes.hasNext()) {
                         val plane = planes.next() as Plane
 
-                        //If a plane has been detected & is being tracked by ARCore
+                        // If a plane has been detected & is being tracked by ARCore
                         if (plane.trackingState == TrackingState.TRACKING && !anchorSelected) {
                             // Hide the plane discovery helper animation
                             // arFragment.planeDiscoveryController.hide()
@@ -293,6 +306,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     }
                 }
 
+                // Augmented images
+                val updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
+
+                for (img in updatedAugmentedImages) {
+                    if (img.trackingState == TrackingState.TRACKING) {
+
+                        val centerPoseAnchor: Anchor = img.createAnchor(img.centerPose)
+
+                        // You can also check which image this is based on AugmentedImage.getName().
+                        when (img.name) {
+                            "default" -> placeObject(arFragment, centerPoseAnchor, R.layout.text_card_view);
+                        }
+                    }
+                }
             }
         }
     }
@@ -403,6 +430,46 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
     }
 
+    public fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
+        val imageDatabase = AugmentedImageDatabase(session)
+        val filename = "default.jpg"
+        val bitmap = loadAugmentedImage(filename) ?: return false
+        imageDatabase.addImage("default", bitmap)
+        config.augmentedImageDatabase = imageDatabase
+        session.configure(config)
+        return true
+    }
+
+    private fun loadAugmentedImage(imagename: String): Bitmap? {
+        try {
+            assets.open(imagename).use { return BitmapFactory.decodeStream(it) }
+        } catch (e: IOException) {
+            Toast.makeText(this, "Error load image", Toast.LENGTH_LONG).show()
+        }
+        return null
+    }
+
+    private fun placeObject(arFragment: ArFragment, anchor: Anchor, uri: Int) {
+        val anchorNode = AnchorNode(anchor)
+        val place = Place(
+            storeSize().toString(),
+            "yxxnb",
+            lat=(42.3009473).toString(),
+            lng=(-83.73001909999999).toString(),
+            x=(1.00).toString(),
+            y=(1.00).toString(),
+            z=(1.00).toString(),
+            orientation = (0.00).toString()
+        )
+        val placeNode = PlaceNode(this, place)
+        placeNode.setParent(anchorNode)
+        placeNode.localPosition = Vector3(0f, 0f, 0f)
+        placeNode.localRotation = Quaternion(Vector3(90f, 180f, 0f))
+        placeNode.setOnTapListener { _, _ ->
+            showInfoWindow(place, anchorNode)
+        }
+        anchorNode.setParent(arFragment.arSceneView.scene)
+    }
 }
 
 
