@@ -52,7 +52,7 @@ class EditActivity : AppCompatActivity() {
         toolbar.inflateMenu(R.menu.editmenu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.action_share -> place?.let { p -> postNote(applicationContext, p) }
+                R.id.action_share -> place?.let { p -> postNote(this, p) }
             }
             true
         }

@@ -202,9 +202,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun initToolbar() {
         toolbar.title = ""
-//        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
+        toolbartitle = toolbar.findViewById(R.id.toolbar_title)
 //        setSupportActionBar(toolbar)
-//        toolbartitle.text="ARGo"
+        toolbartitle.text="ARGo"
         toolbar.setNavigationIcon(R.drawable.ic_baseline_event_note_24)
         toolbar.setNavigationOnClickListener {
             // change to listActivity
@@ -430,7 +430,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         SensorManager.getOrientation(rotationMatrix, orientationAngles)
     }
 
-    public fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
+    fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
         val imageDatabase = AugmentedImageDatabase(session)
         val filename = "default.jpg"
         val bitmap = loadAugmentedImage(filename) ?: return false
