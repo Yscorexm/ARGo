@@ -16,17 +16,24 @@ package edu.umich.argo.arnote
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.ActivityManager
+import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import com.google.ar.sceneform.Node
+import android.graphics.*
+import android.graphics.ImageFormat.NV21
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.Image
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.View.INVISIBLE
@@ -37,6 +44,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -45,11 +53,7 @@ import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.rendering.ModelRenderable
-import com.google.ar.sceneform.rendering.Renderable
-import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import com.google.ar.sceneform.ux.TransformableNode
 import edu.umich.argo.arnote.ar.PlaceNode
 import edu.umich.argo.arnote.ar.PlacesArFragment
 import edu.umich.argo.arnote.model.NoteStore.addNoteToStore
@@ -61,7 +65,9 @@ import edu.umich.argo.arnote.model.NoteStore.storeSize
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
-import java.io.IOException
+import java.io.*
+import java.io.File.separator
+import java.nio.ByteBuffer
 
 
 @SuppressLint("MissingPermission")
@@ -96,6 +102,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentPlaceNode: PlaceNode? = null
 
     // augmented images
+    var imageUri: Uri? = null
+    private lateinit var forCropResult: ActivityResultLauncher<Intent>
+    private lateinit var forTakeResult: ActivityResultLauncher<Uri>
+    private lateinit var imageDatabase: AugmentedImageDatabase
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,6 +156,40 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             )
         }
         setUpAr()
+
+//        val cropIntent = initCropIntent()
+
+        forCropResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    result.data?.data.let {
+                        imageUri?.run {
+                            if (!toString().contains("ORIGINAL")) {
+                                // delete uncropped photo taken for posting
+                                contentResolver.delete(this, null, null)
+                            }
+                        }
+                        imageUri = it
+                        imageUri?.let { }
+                    }
+                } else {
+                    Log.d("Crop", result.resultCode.toString())
+                }
+            }
+
+//        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+//            Log.d("Camera", "Device has no camera!")
+//            return
+//        }
+
+//        forTakeResult =
+//            registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+//                if (success) {
+//                    doCrop(cropIntent)
+//                } else {
+//                    Log.d("TakePicture", "failed")
+//                }
+//            }
     }
 
     private fun getPermission() {
@@ -225,6 +269,40 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
         itemButton.setOnClickListener {
             // TODO call camera
+//            imageUri = mediaStoreAlloc("image/jpeg")
+//            forTakeResult.launch(imageUri)
+//            var image = imageUri?.let { it1 -> getBitmapFromUri(it1) }
+
+            val imageObj = arFragment.arSceneView.arFrame?.acquireCameraImage()
+//            val buffer = imageObj?.planes?.get(0)?.buffer
+//            val bytes = ByteArray(buffer!!.capacity())
+//            buffer[bytes]
+//            val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
+//            val bytes = buffer?.let { it1 -> ByteArray(it1.remaining()) }
+//            if (buffer != null) {
+//                buffer.get(bytes)
+//            }
+
+            val bytes =
+                imageObj?.let {
+                        it1 -> YUV_420_888toNV21(it1)?.let { it1 -> imageObj?.let {
+                            it2 -> NV21toJPEG(it1, it2.width, imageObj.height)
+                        } }
+                }
+            val image = bytes?.let { it1 -> BitmapFactory.decodeByteArray(bytes, 0, it1.size, null) }
+            if (image != null) {
+                imageUri = saveImage(image, applicationContext, "ARcore")
+            }
+//            imageUri = image?.let { it1 -> getUriFromBitmap(it1) }
+            val cropIntent = initCropIntent()
+            cropIntent?.putExtra(Intent.EXTRA_STREAM, imageUri)
+            doCrop(cropIntent)
+            imageDatabase.addImage("new_image", image)
+            arFragment.arSceneView.session?.apply {
+                val changedConfig = config
+                changedConfig.augmentedImageDatabase = imageDatabase
+                configure(changedConfig)
+            }
         }
         gpsButton.setOnClickListener {
             arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
@@ -317,10 +395,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     if (img.trackingState == TrackingState.TRACKING) {
 
                         val centerPoseAnchor: Anchor = img.createAnchor(img.centerPose)
+                        Log.d("AugImage", img.name)
 
                         // You can also check which image this is based on AugmentedImage.getName().
                         when (img.name) {
                             "default" -> placeObject(arFragment, centerPoseAnchor, R.layout.text_card_view);
+                            "new_image" -> placeObject(arFragment, centerPoseAnchor, R.layout.text_card_view);
                         }
                     }
                 }
@@ -435,7 +515,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
-        val imageDatabase = AugmentedImageDatabase(session)
+        imageDatabase = AugmentedImageDatabase(session)
         val filename = "default.jpg"
         val bitmap = loadAugmentedImage(filename) ?: return false
         imageDatabase.addImage("default", bitmap)
@@ -473,6 +553,102 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             showInfoWindow(place, anchorNode)
         }
         anchorNode.setParent(arFragment.arSceneView.scene)
+    }
+
+    private fun initCropIntent(): Intent? {
+        // Is there any published Activity on device to do image cropping?
+        val intent = Intent("com.android.camera.action.CROP")
+        intent.type = "image/*"
+        val listofCroppers = packageManager.queryIntentActivities(intent, 0)
+        // No image cropping Activity published
+        if (listofCroppers.size == 0) {
+            Log.d("Crop", "Device does not support image cropping")
+            return null
+        }
+
+        intent.component = ComponentName(
+            listofCroppers[0].activityInfo.packageName,
+            listofCroppers[0].activityInfo.name)
+
+        // create a random crop box:
+        intent.putExtra("scale", true)
+            .putExtra("crop", true)
+            .putExtra("return-data", true)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        return intent
+    }
+
+    private fun doCrop(intent: Intent?) {
+        intent ?: run {
+            imageUri?.let { }
+            return
+        }
+
+        imageUri?.let {
+            intent.data = it
+            forCropResult.launch(intent)
+        }
+    }
+
+    /// @param folderName can be your app's name
+    private fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
+        val values = contentValues()
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/" + folderName)
+        values.put(MediaStore.Images.Media.IS_PENDING, true)
+        // RELATIVE_PATH and IS_PENDING are introduced in API 29.
+
+        val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        if (uri != null) {
+            saveImageToStream(bitmap, context.contentResolver.openOutputStream(uri))
+            values.put(MediaStore.Images.Media.IS_PENDING, false)
+            context.contentResolver.update(uri, values, null, null)
+        }
+        return uri
+    }
+
+    private fun contentValues() : ContentValues {
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        return values
+    }
+
+    private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
+        if (outputStream != null) {
+            try {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                outputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun YUV_420_888toNV21(image: Image): ByteArray? {
+        val nv21: ByteArray
+        val yBuffer: ByteBuffer = image.getPlanes().get(0).getBuffer()
+        val uBuffer: ByteBuffer = image.getPlanes().get(1).getBuffer()
+        val vBuffer: ByteBuffer = image.getPlanes().get(2).getBuffer()
+        val ySize: Int = yBuffer.remaining()
+        val uSize: Int = uBuffer.remaining()
+        val vSize: Int = vBuffer.remaining()
+        nv21 = ByteArray(ySize + uSize + vSize)
+
+        //U and V are swapped
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+        return nv21
+    }
+
+    private fun NV21toJPEG(nv21: ByteArray, width: Int, height: Int): ByteArray? {
+        val out = ByteArrayOutputStream()
+        val yuv = YuvImage(nv21, NV21, width, height, null)
+        yuv.compressToJpeg(Rect(0, 0, width, height), 100, out)
+        return out.toByteArray()
     }
 }
 
