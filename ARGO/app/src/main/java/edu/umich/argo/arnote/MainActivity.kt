@@ -156,7 +156,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     finish()
                 }
             }
-        }.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE))
     }
 
     private fun createLaunchers() {
@@ -220,7 +224,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             gpsButton.visibility = VISIBLE
         }
         itemButton.setOnClickListener {
-
+            // TODO call camera
         }
         gpsButton.setOnClickListener {
             arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
