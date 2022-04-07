@@ -130,6 +130,16 @@ object NoteStore {
         return notes
     }
 
+    fun getNotebyId(id: String) : Place {
+        val noteResult = notes.filter {
+            it.id == id
+        }
+        if (noteResult.isEmpty()) {
+            error("Can't find note")
+        }
+        return noteResult[0]
+    }
+
     // add a local place to backend
     fun postNote(context: Context, place: Place) {
         val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)

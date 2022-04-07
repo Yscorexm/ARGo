@@ -60,7 +60,9 @@ import edu.umich.argo.arnote.model.NoteStore.addNoteToStore
 import edu.umich.argo.arnote.model.NoteStore.dumpNote
 import edu.umich.argo.arnote.model.NoteStore.editNote
 import edu.umich.argo.arnote.model.NoteStore.getNote
+import edu.umich.argo.arnote.model.NoteStore.getNotebyId
 import edu.umich.argo.arnote.model.NoteStore.loadNote
+import edu.umich.argo.arnote.model.NoteStore.notes
 import edu.umich.argo.arnote.model.NoteStore.storeSize
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getDistance
@@ -82,6 +84,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var itemButton: View
     private lateinit var gpsButton: View
     private lateinit var createLauncher: ActivityResultLauncher<Intent>
+    private lateinit var createItemLauncher: ActivityResultLauncher<Intent>
     private lateinit var editLauncher: ActivityResultLauncher<Intent>
     private lateinit var listLauncher: ActivityResultLauncher<Intent>
     private lateinit var session: Session
@@ -106,6 +109,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
     private lateinit var forTakeResult: ActivityResultLauncher<Uri>
     private lateinit var imageDatabase: AugmentedImageDatabase
+    private var trackingItemNotes: Set<String> = setOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -236,6 +240,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
             }
         }
+        createItemLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                val message = it.data?.getStringExtra("message")?:""
+                val place = Place(
+                    storeSize().toString(),
+                    message,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                )
+                addNoteToStore(place)
+            }
+        }
         editLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")
@@ -297,12 +317,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val cropIntent = initCropIntent()
             cropIntent?.putExtra(Intent.EXTRA_STREAM, imageUri)
             doCrop(cropIntent)
-            imageDatabase.addImage("new_image", image)
+            imageDatabase.addImage(storeSize().toString(), image)
             arFragment.arSceneView.session?.apply {
                 val changedConfig = config
                 changedConfig.augmentedImageDatabase = imageDatabase
                 configure(changedConfig)
             }
+            createItemLauncher.launch(Intent(this, EditActivity::class.java))
         }
         gpsButton.setOnClickListener {
             arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
@@ -398,9 +419,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         Log.d("AugImage", img.name)
 
                         // You can also check which image this is based on AugmentedImage.getName().
-                        when (img.name) {
-                            "default" -> placeObject(arFragment, centerPoseAnchor, R.layout.text_card_view);
-                            "new_image" -> placeObject(arFragment, centerPoseAnchor, R.layout.text_card_view);
+                        val notePlace = getNotebyId(img.name)
+                        if (!trackingItemNotes.contains(notePlace.id)) {
+                            trackingItemNotes.plus(notePlace.id)
+                            placeObject(arFragment, centerPoseAnchor, notePlace)
                         }
                     }
                 }
@@ -533,18 +555,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         return null
     }
 
-    private fun placeObject(arFragment: ArFragment, anchor: Anchor, uri: Int) {
+    private fun placeObject(arFragment: ArFragment, anchor: Anchor, place: Place) {
         val anchorNode = AnchorNode(anchor)
-        val place = Place(
-            storeSize().toString(),
-            "yxxnb",
-            lat=(42.3009473).toString(),
-            lng=(-83.73001909999999).toString(),
-            x=(1.00).toString(),
-            y=(1.00).toString(),
-            z=(1.00).toString(),
-            orientation = (0.00).toString()
-        )
         val placeNode = PlaceNode(this, place)
         placeNode.setParent(anchorNode)
         placeNode.localPosition = Vector3(0f, 0f, 0f)
