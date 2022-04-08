@@ -25,7 +25,8 @@
         android:roundIcon="@mipmap/ic_launcher_argo_round"
         android:supportsRtl="true"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:requestLegacyExternalStorage="true">
         <!--
          Indicates that this app requires Google Play Services for AR ("AR Required") and causes
              the Google Play Store to download and intall Google Play Services for AR along with

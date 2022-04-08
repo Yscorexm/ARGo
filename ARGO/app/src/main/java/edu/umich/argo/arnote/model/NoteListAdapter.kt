@@ -11,6 +11,8 @@ import edu.umich.argo.arnote.model.NoteStore.postNote
 import android.graphics.BitmapFactory
 
 import android.graphics.Bitmap
+import android.net.Uri
+import com.squareup.picasso.Picasso
 import java.io.IOException
 import java.io.InputStream
 import java.net.MalformedURLException
@@ -28,19 +30,20 @@ class NoteListAdapter(context: Context, users: MutableList<Place>) :
             val iView = rowView.findViewById<ImageView>(R.id.iView)
             val share = rowView.findViewById<ImageButton>(R.id.imageButton)
             tView.text = message
-//            imageUri?.let{
-//                try {
-//                    val bitmap =
-//                        BitmapFactory.decodeStream(URL(it).getContent() as InputStream)
-//                    iView.setImageBitmap(bitmap)
-//                } catch (e: MalformedURLException) {
-//                    e.printStackTrace()
-//                } catch (e: IOException) {
-//                    e.printStackTrace()
-//                }
-//            }?:run{
-            iView.setImageResource(R.mipmap.pin_full_color)
-//            }
+            iView.setImageURI(null)
+
+            if (type=="gps"){
+                iView.setImageResource(R.mipmap.pin_full_color)
+                iView.rotation= 0F
+            }else{
+                if (imageUri.contains("https")){
+                    Picasso.get().load(imageUri).into(iView)
+                }else{
+                    iView.setImageURI(Uri.parse(imageUri))
+                }
+
+                iView.rotation= 90F
+            }
 
             rowView.setBackgroundColor(Color.parseColor(if (position % 2 == 0) "#E0E0E0" else "#EEEEEE"))
             share.setOnClickListener {

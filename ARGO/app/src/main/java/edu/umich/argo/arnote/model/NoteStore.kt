@@ -161,10 +161,9 @@ object NoteStore {
             imageUri?.run {
                 toFile(context)?.let {
                     mpFD.addFormDataPart("image", "itemImage",
-                        it.asRequestBody("image/jpeg".toMediaType()))
+                        it.asRequestBody("image/png".toMediaType()))
                 } ?: Toast.makeText(context, "Unsupported image format", Toast.LENGTH_LONG).show()
             }
-
             finalUrl+="postnoteimage/"
         }
         val request = Request.Builder()
@@ -177,6 +176,7 @@ object NoteStore {
             override fun onFailure(call: Call, e: IOException) {
                 (context as Activity).runOnUiThread {
                     Toast.makeText(context, "Share note fails!", Toast.LENGTH_LONG).show()
+                    e.printStackTrace()
                 }
             }
 
