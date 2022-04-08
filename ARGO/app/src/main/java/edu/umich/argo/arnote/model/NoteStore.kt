@@ -55,7 +55,7 @@ object NoteStore {
     private val TAG="NoteStore"
     var notes = mutableListOf<Place>()
     private val nFields = 11
-    private const val serverUrl = "https://18.216.173.236/"
+    private const val serverUrl = "https://441.scarletissimo.cf/"
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
 
