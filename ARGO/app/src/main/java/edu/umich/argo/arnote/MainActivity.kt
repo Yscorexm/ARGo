@@ -429,6 +429,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         for (place in places) {
+            // Skip item based place
+            if (place.lat == "") {
+                continue
+            }
             // Add the place in AR
              if (place.type == "item") { continue }
             val placeNode = PlaceNode(this, place)
@@ -542,8 +546,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val anchorNode = AnchorNode(anchor)
         val placeNode = PlaceNode(this, place)
         placeNode.setParent(anchorNode)
+        placeNode.localScale = Vector3(0.20f, 0.20f, 0.20f)
         placeNode.localPosition = Vector3(0f, 0f, 0f)
-        placeNode.localRotation = Quaternion(Vector3(90f, 180f, 0f))
+        placeNode.localRotation = Quaternion(Vector3(90f, 270f, 0f))
         placeNode.setOnTapListener { _, _ ->
             showInfoWindow(place, anchorNode)
         }

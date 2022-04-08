@@ -18,6 +18,7 @@ import android.content.Context
 import android.widget.TextView
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.ViewRenderable
+import com.google.ar.sceneform.rendering.ViewSizer
 import edu.umich.argo.arnote.R
 import edu.umich.argo.arnote.model.Place
 
@@ -26,7 +27,7 @@ class PlaceNode(
     val place: Place?
 ) : Node() {
 
-    private var placeRenderable: ViewRenderable? = null
+    var placeRenderable: ViewRenderable? = null
     var textViewPlace: TextView? = null
 
     override fun onActivate() {
@@ -41,8 +42,9 @@ class PlaceNode(
         }
 
         ViewRenderable.builder()
+            .setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER)
             .setView(context, R.layout.text_card_view)
-            .build()    
+            .build()
             .thenAccept { renderable ->
                 renderable.isShadowCaster = false
                 renderable.isShadowReceiver = false

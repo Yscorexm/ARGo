@@ -4,10 +4,10 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.database.Cursor
+import android.net.Uri
 import android.widget.Toast
 import android.util.Log
-import com.google.ar.core.AugmentedImageDatabase
-import com.google.ar.core.Session
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
@@ -15,15 +15,46 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 /*
 Supports add note, edit note, load note
 */
 
+fun Uri.toFile(context: Context): File? {
+
+    if (!(authority == "media" || authority == "com.google.android.apps.photos.contentprovider")) {
+        // for on-device media files only
+        Toast.makeText(context, "Media file not on device", Toast.LENGTH_LONG).show()
+        Log.d("Uri.toFile", authority.toString())
+        return null
+    }
+
+    if (scheme.equals("content")) {
+        var cursor: Cursor? = null
+        try {
+            cursor = context.getContentResolver().query(
+                this, arrayOf("_data"),
+                null, null, null
+            )
+
+            cursor?.run {
+                moveToFirst()
+                return File(getString(getColumnIndexOrThrow("_data")))
+            }
+        } finally {
+            cursor?.close()
+        }
+    }
+    return null
+}
+
 object NoteStore {
     private val TAG="NoteStore"
     var notes = mutableListOf<Place>()
-    private val nFields = 10
+    private val nFields = 11
     private const val serverUrl = "https://18.216.173.236/"
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
@@ -113,16 +144,31 @@ object NoteStore {
 
     // add a local place to backend
     fun postNote(context: Context, place: Place) {
-        val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
+        var mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("message", place.message)
-            .addFormDataPart("lat", place.lat)
-            .addFormDataPart("lng", place.lng)
-            .addFormDataPart("x", place.x)
-            .addFormDataPart("y", place.y)
-            .addFormDataPart("z", place.z)
+        var finalUrl=serverUrl;
+        if (place.type=="gps"){
+            mpFD.addFormDataPart("lat", place.lat)
+                .addFormDataPart("lng", place.lng)
+                .addFormDataPart("x", place.x)
+                .addFormDataPart("y", place.y)
+                .addFormDataPart("z", place.z)
+                .addFormDataPart("orientation",place.orientation)
 
+            finalUrl+="postnoteplace/"
+        }else{
+            val imageUri=Uri.parse(place.imageUri)
+            imageUri?.run {
+                toFile(context)?.let {
+                    mpFD.addFormDataPart("image", "itemImage",
+                        it.asRequestBody("image/jpeg".toMediaType()))
+                } ?: Toast.makeText(context, "Unsupported image format", Toast.LENGTH_LONG).show()
+            }
+
+            finalUrl+="postnoteimage/"
+        }
         val request = Request.Builder()
-            .url(serverUrl+"postnoteplace/")
+            .url(finalUrl)
             .post(mpFD.build())
             .build()
 
@@ -170,14 +216,14 @@ object NoteStore {
                     if (chattEntry.length() == nFields) {
                         addNoteToStore(Place(id = storeSize().toString(),
                             message=chattEntry[1].toString(),
-                            type=chattEntry[9].toString(),
+                            type=chattEntry[10].toString(),
                             lat=chattEntry[2].toString(),
                             lng=chattEntry[3].toString(),
                             x=chattEntry[4].toString(),
                             y=chattEntry[5].toString(),
                             z=chattEntry[6].toString(),
                             orientation=chattEntry[7].toString(),
-                            imageUri=chattEntry[8].toString(),
+                            imageUri=chattEntry[9].toString(),
                         ))
                     } else {
                         Log.e(TAG,
@@ -191,3 +237,4 @@ object NoteStore {
         })
     }
 }
+
