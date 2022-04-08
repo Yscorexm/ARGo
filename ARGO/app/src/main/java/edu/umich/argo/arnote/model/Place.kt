@@ -27,15 +27,18 @@ import kotlin.math.sin
  * A model describing details about a Place (location, name, type, etc.).
  */
 
+@Serializable
 data class Place(
     val id: String,
+    val type: String,  // (item | gps)
     var message: String,
     val lat: String,
     val lng: String,
     val x: String,
     val y: String,
     val z: String,
-    val orientation: String
+    val orientation: String,
+    val imageUri: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Place) {
@@ -48,12 +51,13 @@ data class Place(
         return this.id.hashCode()
     }
 
-    val latLng: LatLng
-        get() = LatLng(lat.toDouble(), lng.toDouble())
+    fun getLatLng(): LatLng {
+        return LatLng(lat.toDouble(), lng.toDouble())
+    }
 }
 
 fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
-    val placeLatLng = this.latLng
+    val placeLatLng = this.getLatLng()
     val heading = latLng.sphericalHeading(placeLatLng)
     val distance = getDistance(latLng)
     val x1 = distance * sin(azimuth + heading).toFloat()
@@ -72,8 +76,8 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
 
 fun Place.getDistance(latLng: LatLng): Float {
     val startLocation = Location("Start")
-    startLocation.latitude = this.latLng.latitude
-    startLocation.longitude = this.latLng.longitude
+    startLocation.latitude = this.getLatLng().latitude
+    startLocation.longitude = this.getLatLng().longitude
     val endLocation = Location("end")
     endLocation.latitude = latLng.latitude
     endLocation.longitude = latLng.longitude
@@ -81,15 +85,3 @@ fun Place.getDistance(latLng: LatLng): Float {
     Log.d("Place", distance.toString())
     return distance
 }
-
-@Serializable
-class JsonPlace(
-    val id: String,
-    var message: String,
-    val lat: String,
-    val lng: String,
-    val x: String,
-    val y: String,
-    val z: String,
-    val orientation: String
-)

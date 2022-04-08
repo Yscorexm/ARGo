@@ -138,24 +138,28 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             addNoteToStore(
                 Place(
                     storeSize().toString(),
+                    "gps",
                     "note1, balabala",
                     lat=(42.3009473).toString(),
                     lng=(-83.73001909999999).toString(),
                     x=(1.00).toString(),
                     y=(1.00).toString(),
                     z=(1.00).toString(),
-                    orientation = (0.00).toString()
+                    orientation = (0.00).toString(),
+                    ""
                 ),
             )
             addNoteToStore(
                 Place(storeSize().toString(),
+                    "gps",
                     "note2, wt",
                     lat=(42.299268).toString(),
                     lng=(-83.717808).toString(),
                     x=(1.00).toString(),
                     y=(1.00).toString(),
                     z=(1.00).toString(),
-                    orientation = (0.00).toString()
+                    orientation = (0.00).toString(),
+                    ""
                 )
             )
         }
@@ -219,13 +223,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 currentLocation?.let {
                     val place = Place(
                         storeSize().toString(),
+                        "gps",
                         message,
                         it.lat,
                         it.lng,
                         newAnchorNode?.anchor?.pose?.tx().toString(),
                         newAnchorNode?.anchor?.pose?.ty().toString(),
                         newAnchorNode?.anchor?.pose?.tz().toString(),
-                        orientationAngles[0].toString()
+                        orientationAngles[0].toString(),
+                        ""
                     )
                     Log.d("Place", orientationAngles[0].toString())
                     addNoteToStore(place)
@@ -245,15 +251,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 val message = it.data?.getStringExtra("message")?:""
                 val place = Place(
                     storeSize().toString(),
+                    "item",
                     message,
                     "",
                     "",
                     "",
                     "",
                     "",
-                    ""
+                    "",
+                    imageUri.toString()
                 )
                 addNoteToStore(place)
+                imageUri = null
             }
         }
         editLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -288,20 +297,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             gpsButton.visibility = VISIBLE
         }
         itemButton.setOnClickListener {
-            // TODO call camera
-//            imageUri = mediaStoreAlloc("image/jpeg")
-//            forTakeResult.launch(imageUri)
-//            var image = imageUri?.let { it1 -> getBitmapFromUri(it1) }
-
             val imageObj = arFragment.arSceneView.arFrame?.acquireCameraImage()
-//            val buffer = imageObj?.planes?.get(0)?.buffer
-//            val bytes = ByteArray(buffer!!.capacity())
-//            buffer[bytes]
-//            val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
-//            val bytes = buffer?.let { it1 -> ByteArray(it1.remaining()) }
-//            if (buffer != null) {
-//                buffer.get(bytes)
-//            }
 
             val bytes =
                 imageObj?.let {
@@ -455,15 +451,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 continue
             }
             // Add the place in AR
+             if (place.type == "item") { continue }
             val placeNode = PlaceNode(this, place)
             if (placeNode.place != null) {
-                if (placeNode.place.getDistance(currentLocation.latLng) > 10.0) {
+                if (placeNode.place.getDistance(currentLocation.getLatLng()) > 10.0) {
                     continue
                 }
             }
 
             placeNode.setParent(anchorNode)
-            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.latLng)
+            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.getLatLng())
             placeNode.setOnTapListener { _, _ ->
                 showInfoWindow(place, anchorNode)
             }
@@ -491,13 +488,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 if (it.isSuccessful) {
                     currentLocation = Place(
                         "current",
+                        "gps",
                         "ok",
                         it.result.latitude.toString(),
                         it.result.longitude.toString(),
                         (0.00).toString(),
                         (0.00).toString(),
                         (0.00).toString(),
-                        (0.00).toString()
+                        (0.00).toString(),
+                        ""
                     )
                 } else {
                     Log.e("PostActivity getFusedLocation", it.exception.toString())

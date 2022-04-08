@@ -28,7 +28,6 @@ Supports add note, edit note, load note
 object NoteStore {
     private val TAG="NoteStore"
     var notes = mutableListOf<Place>()
-    var _notes = mutableListOf<JsonPlace>()
     private val nFields = 10
     private const val serverUrl = "https://18.216.173.236/"
     private const val gpsFilePath = "gps_notes.json"
@@ -53,25 +52,13 @@ object NoteStore {
 
     // store GPS information of all notes to "gps_notes.json"
     fun dumpNote(context: Context) {
-        val jsonList = Json.encodeToString(_notes)
+        val jsonList = Json.encodeToString(notes)
         context.openFileOutput(gpsFilePath, Context.MODE_PRIVATE).use {
             it.write(jsonList.toByteArray())
         }
     }
 
     fun addNoteToStore(place: Place) {
-        _notes.add(
-            JsonPlace(
-                id = place.id,
-                message = place.message,
-                lat = place.lat,
-                lng = place.lng,
-                x = place.x,
-                y = place.y,
-                z = place.z,
-                orientation = place.orientation
-            )
-        )
         notes.add(place)
     }
 
@@ -81,7 +68,6 @@ object NoteStore {
             if (targetId != null) {
                 if (i == targetId.toInt()) {
                     notes[i].message = message
-                    _notes[i].message = message
                 }
             }
         }
@@ -96,24 +82,12 @@ object NoteStore {
         val data = JSONArray(jsonStr)
         val gson = Gson()
         notes.clear()
-        _notes.clear()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
-                _notes.add(JsonPlace(
-                    id = noteEntry.get("id").toString(),
-                    message = noteEntry.get("message").toString(),
-                    lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString(),
-                    x = noteEntry.get("x").toString(),
-                    y = noteEntry.get("y").toString(),
-                    z = noteEntry.get("z").toString(),
-                    orientation = noteEntry.get("orientation").toString(),
-                ))
-            }
-            if (noteEntry != null) {
                 notes.add(Place(
                     id = noteEntry.get("id").toString(),
+                    type = noteEntry.get("type").toString(),
                     message = noteEntry.get("message").toString(),
                     lat = noteEntry.get("lat").toString(),
                     lng = noteEntry.get("lng").toString(),
@@ -121,6 +95,7 @@ object NoteStore {
                     y = noteEntry.get("y").toString(),
                     z = noteEntry.get("z").toString(),
                     orientation = noteEntry.get("orientation").toString(),
+                    imageUri = noteEntry.get("imageUri").toString(),
                 ))
             }
         }
@@ -198,13 +173,15 @@ object NoteStore {
                     val chattEntry = chattsReceived as JSONArray
                     if (chattEntry.length() == nFields) {
                         addNoteToStore(Place(id = storeSize().toString(),
-                            message = chattEntry[1].toString(),
+                            message=chattEntry[1].toString(),
+                            type=chattEntry[9].toString(),
                             lat=chattEntry[2].toString(),
                             lng=chattEntry[3].toString(),
                             x=chattEntry[4].toString(),
                             y=chattEntry[5].toString(),
                             z=chattEntry[6].toString(),
-                            orientation = chattEntry[7].toString(),
+                            orientation=chattEntry[7].toString(),
+                            imageUri=chattEntry[8].toString(),
                         ))
                     } else {
                         Log.e(TAG,
