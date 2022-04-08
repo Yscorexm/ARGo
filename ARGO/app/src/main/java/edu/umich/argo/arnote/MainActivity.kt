@@ -172,6 +172,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             }
                         }
                         imageUri = it
+                        createItemLauncher.launch(Intent(this, EditActivity::class.java))
                     }
                 } else {
                     Log.d("Crop", result.resultCode.toString())
@@ -298,7 +299,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 changedConfig.augmentedImageDatabase = imageDatabase
                 configure(changedConfig)
             }
-            createItemLauncher.launch(Intent(this, EditActivity::class.java))
         }
         gpsButton.setOnClickListener {
             arFragment.setOnTapArPlaneListener { hitResult, _, _ ->
