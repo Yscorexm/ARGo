@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentPlaceNode: PlaceNode? = null
 
     // augmented images
-    lateinit var imageDatabase: AugmentedImageDatabase
+    private var imageDatabase: AugmentedImageDatabase? = null
     private val arAugImageDBPath = "argo_item_notes_database.imgdb"
     var imageUri: Uri? = null
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
@@ -172,7 +172,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             }
                         }
                         imageUri = it
-                        imageUri?.let { }
                     }
                 } else {
                     Log.d("Crop", result.resultCode.toString())
@@ -293,7 +292,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val cropIntent = initCropIntent()
             cropIntent?.putExtra(Intent.EXTRA_STREAM, imageUri)
             doCrop(cropIntent)
-            imageDatabase.addImage(storeSize().toString(), image)
+            imageDatabase?.addImage(storeSize().toString(), image)
             arFragment.arSceneView.session?.apply {
                 val changedConfig = config
                 changedConfig.augmentedImageDatabase = imageDatabase
@@ -349,7 +348,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onPause()
 //        sensorManager.unregisterListener(this)
         applicationContext.openFileOutput(arAugImageDBPath, Context.MODE_PRIVATE).use {
-            imageDatabase.serialize(it)
+            imageDatabase?.serialize(it)
         }
         dumpNote(applicationContext)
     }
