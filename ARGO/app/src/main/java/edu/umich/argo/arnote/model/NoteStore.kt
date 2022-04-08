@@ -5,13 +5,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
-import android.text.Editable
 import android.util.Log
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley.newRequestQueue
-import com.google.gson.Gson
+import com.google.ar.core.AugmentedImageDatabase
+import com.google.ar.core.Session
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
@@ -19,7 +15,6 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-import okhttp3.*
 
 /*
 Supports add note, edit note, load note
@@ -80,23 +75,24 @@ object NoteStore {
     fun loadNote(context: Context) {
         val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)
-        val gson = Gson()
         notes.clear()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
-                notes.add(Place(
-                    id = noteEntry.get("id").toString(),
-                    type = noteEntry.get("type").toString(),
-                    message = noteEntry.get("message").toString(),
-                    lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString(),
-                    x = noteEntry.get("x").toString(),
-                    y = noteEntry.get("y").toString(),
-                    z = noteEntry.get("z").toString(),
-                    orientation = noteEntry.get("orientation").toString(),
-                    imageUri = noteEntry.get("imageUri").toString(),
-                ))
+                notes.add(
+                    Place(
+                        id = noteEntry.get("id").toString(),
+                        type = noteEntry.get("type").toString(),
+                        message = noteEntry.get("message").toString(),
+                        lat = noteEntry.get("lat").toString(),
+                        lng = noteEntry.get("lng").toString(),
+                        x = noteEntry.get("x").toString(),
+                        y = noteEntry.get("y").toString(),
+                        z = noteEntry.get("z").toString(),
+                        orientation = noteEntry.get("orientation").toString(),
+                        imageUri = noteEntry.get("imageUri").toString(),
+                    )
+                )
             }
         }
     }

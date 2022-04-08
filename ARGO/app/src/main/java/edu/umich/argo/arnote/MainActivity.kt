@@ -30,9 +30,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.media.Image
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -44,7 +42,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -62,13 +59,11 @@ import edu.umich.argo.arnote.model.NoteStore.editNote
 import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.NoteStore.getNotebyId
 import edu.umich.argo.arnote.model.NoteStore.loadNote
-import edu.umich.argo.arnote.model.NoteStore.notes
 import edu.umich.argo.arnote.model.NoteStore.storeSize
 import edu.umich.argo.arnote.model.Place
 import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
 import java.io.*
-import java.io.File.separator
 import java.nio.ByteBuffer
 
 
@@ -87,7 +82,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var createItemLauncher: ActivityResultLauncher<Intent>
     private lateinit var editLauncher: ActivityResultLauncher<Intent>
     private lateinit var listLauncher: ActivityResultLauncher<Intent>
-    private lateinit var session: Session
 
     // Sensor
     private lateinit var sensorManager: SensorManager
@@ -105,10 +99,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentPlaceNode: PlaceNode? = null
 
     // augmented images
+    lateinit var imageDatabase: AugmentedImageDatabase
+    private val arAugImageDBPath = "argo_item_notes_database.imgdb"
     var imageUri: Uri? = null
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
-    private lateinit var forTakeResult: ActivityResultLauncher<Uri>
-    private lateinit var imageDatabase: AugmentedImageDatabase
     private var trackingItemNotes: Set<String> = setOf()
 
 
@@ -184,20 +178,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     Log.d("Crop", result.resultCode.toString())
                 }
             }
-
-//        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
-//            Log.d("Camera", "Device has no camera!")
-//            return
-//        }
-
-//        forTakeResult =
-//            registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-//                if (success) {
-//                    doCrop(cropIntent)
-//                } else {
-//                    Log.d("TakePicture", "failed")
-//                }
-//            }
     }
 
     private fun getPermission() {
@@ -357,17 +337,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         addButton.visibility = VISIBLE
         itemButton.visibility = INVISIBLE
         gpsButton.visibility = INVISIBLE
-//        if (anchorNode != null) {
-//            if (!anchorNode?.isTracking!!) {
-//                anchorSelected = false
-//                setUpAr()
-//            }
-//        }
+        if (anchorNode != null) {
+            if (!anchorNode?.isTracking!!) {
+                anchorSelected = false
+                setUpAr()
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
 //        sensorManager.unregisterListener(this)
+        applicationContext.openFileOutput(arAugImageDBPath, Context.MODE_PRIVATE).use {
+            imageDatabase.serialize(it)
+        }
         dumpNote(applicationContext)
     }
 
@@ -411,12 +394,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 for (img in updatedAugmentedImages) {
                     if (img.trackingState == TrackingState.TRACKING) {
 
-                        val centerPoseAnchor: Anchor = img.createAnchor(img.centerPose)
                         Log.d("AugImage", img.name)
 
                         // You can also check which image this is based on AugmentedImage.getName().
                         val notePlace = getNotebyId(img.name)
                         if (!trackingItemNotes.contains(notePlace.id)) {
+                            val centerPoseAnchor: Anchor = img.createAnchor(img.centerPose)
                             trackingItemNotes.plus(notePlace.id)
                             placeObject(arFragment, centerPoseAnchor, notePlace)
                         }
@@ -537,9 +520,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
         imageDatabase = AugmentedImageDatabase(session)
-        val filename = "default.jpg"
-        val bitmap = loadAugmentedImage(filename) ?: return false
-        imageDatabase.addImage("default", bitmap)
+//        val filename = "default.jpg"
+//        val bitmap = loadAugmentedImage(filename) ?: return false
+//        imageDatabase.addImage("default", bitmap)
+        imageDatabase = AugmentedImageDatabase.deserialize(session, application.openFileInput(arAugImageDBPath))
         config.augmentedImageDatabase = imageDatabase
         session.configure(config)
         return true
