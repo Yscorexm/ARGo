@@ -15,13 +15,11 @@
 package edu.umich.argo.arnote.model
 
 import android.location.Location
-import android.net.Uri
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import com.google.ar.sceneform.math.Vector3
 import com.google.maps.android.ktx.utils.sphericalHeading
 import kotlinx.serialization.Serializable
-import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 

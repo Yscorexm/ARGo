@@ -18,7 +18,6 @@ import android.content.Context
 import android.widget.TextView
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.ViewRenderable
-import com.google.ar.sceneform.rendering.ViewSizer
 import edu.umich.argo.arnote.R
 import edu.umich.argo.arnote.model.Place
 

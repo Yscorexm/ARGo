@@ -8,15 +8,9 @@ import edu.umich.argo.arnote.R
 import android.graphics.Color
 import android.widget.*
 import edu.umich.argo.arnote.model.NoteStore.postNote
-import android.graphics.BitmapFactory
-
-import android.graphics.Bitmap
 import android.net.Uri
 import com.squareup.picasso.Picasso
-import java.io.IOException
-import java.io.InputStream
-import java.net.MalformedURLException
-import java.net.URL
+
 
 
 class NoteListAdapter(context: Context, users: MutableList<Place>) :
