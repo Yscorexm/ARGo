@@ -336,12 +336,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         addButton.visibility = VISIBLE
         itemButton.visibility = INVISIBLE
         gpsButton.visibility = INVISIBLE
-        if (anchorNode != null) {
-            if (!anchorNode?.isTracking!!) {
-                anchorSelected = false
-                setUpAr()
-            }
-        }
+//        if (anchorNode != null) {
+//            if (!anchorNode?.isTracking!!) {
+//                anchorSelected = false
+//                setUpAr()
+//            }
+//        }
     }
 
     override fun onPause() {
