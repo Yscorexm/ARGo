@@ -45,8 +45,14 @@ class PlacesArFragment : ArFragment() {
 //        planeDiscoveryController.setInstructionView(null)
         val config = Config(session)
         config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE)
+        config.setFocusMode(Config.FocusMode.AUTO)
         session.configure(config)
         arSceneView.setupSession(session)
+        session.apply {
+            resume()
+            pause()
+            resume()
+        }
         if ((activity as MainActivity).setupAugmentedImagesDB(config, session))
             Log.d("arcoreimg_db", "success")
         else
