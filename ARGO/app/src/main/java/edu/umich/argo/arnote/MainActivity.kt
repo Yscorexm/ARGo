@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var imageDatabase: AugmentedImageDatabase? = null
     private val arAugImageDBPath = "argo_item_notes_database.imgdb"
     var imageUri: Uri? = null
+    var tmpImageUri: Uri? = null
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
     private var trackingItemNotes: Set<String> = setOf()
 
@@ -168,7 +169,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         imageUri?.run {
                             if (!toString().contains("ORIGINAL")) {
                                 // delete uncropped photo taken for posting
-                                contentResolver.delete(this, null, null)
+//                                contentResolver.delete(this, null, null)
                             }
                         }
                         imageUri = it
@@ -572,7 +573,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // create a random crop box:
         intent.putExtra("scale", true)
             .putExtra("crop", true)
-            .putExtra("return-data", true)
+            .putExtra("return-data", false)
+            .putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+            .putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
+            .putExtra("noFaceDetection", true)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
