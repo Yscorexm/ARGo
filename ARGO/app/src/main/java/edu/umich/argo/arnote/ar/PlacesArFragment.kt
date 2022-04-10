@@ -28,7 +28,6 @@ import java.util.*
 class PlacesArFragment : ArFragment() {
     private var anchorSelected: Boolean = false
     var imageDatabase: AugmentedImageDatabase? = null
-    var numImageInDB = 0
     private val arAugImageDBPath = "argo_item_notes_database.imgdb"
 
     override fun getAdditionalPermissions(): Array<String> =

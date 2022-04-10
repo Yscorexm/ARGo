@@ -157,8 +157,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
         setUpAr()
 
-//        val cropIntent = initCropIntent()
-
         forCropResult =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
