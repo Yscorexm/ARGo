@@ -312,20 +312,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-//        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
-//            sensorManager.registerListener(
-//                this,
-//                it,
-//                SensorManager.SENSOR_DELAY_NORMAL
-//            )
-//        }
-//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
-//            sensorManager.registerListener(
-//                this,
-//                it,
-//                SensorManager.SENSOR_DELAY_NORMAL
-//            )
-//        }
+        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
+            sensorManager.registerListener(
+                this,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+        }
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
+            sensorManager.registerListener(
+                this,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+        }
         arFragment.arSceneView.session?.resume()
         arFragment.setOnTapArPlaneListener(null)
         addButton.visibility = VISIBLE
@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onPause() {
         super.onPause()
-//        sensorManager.unregisterListener(this)
+        sensorManager.unregisterListener(this)
         arFragment.dumpDB(applicationContext)
         dumpNote(applicationContext)
     }
@@ -576,13 +576,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun doCrop(intent: Intent?) {
-        intent ?: run {
-            imageUri?.let { }
-            return
-        }
-
         imageUri?.let {
-            intent.data = it
+            if (intent != null) {
+                intent.data = it
+            }
             forCropResult.launch(intent)
         }
     }

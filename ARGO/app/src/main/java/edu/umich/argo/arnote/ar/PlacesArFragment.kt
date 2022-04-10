@@ -18,12 +18,11 @@ import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.google.ar.core.AugmentedImageDatabase
-import com.google.ar.core.Config
-import com.google.ar.core.Session
+import com.google.ar.core.*
 import com.google.ar.sceneform.ux.ArFragment
 import edu.umich.argo.arnote.MainActivity
 import edu.umich.argo.arnote.model.NoteStore
+import java.util.*
 
 
 class PlacesArFragment : ArFragment() {
@@ -52,6 +51,14 @@ class PlacesArFragment : ArFragment() {
         val config = Config(session)
         config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE)
         config.setFocusMode(Config.FocusMode.AUTO)
+
+        val filter = CameraConfigFilter(session)
+
+        filter.setTargetFps(EnumSet.of(CameraConfig.TargetFps.TARGET_FPS_30))
+        val cameraConfigList = session?.getSupportedCameraConfigs(filter)
+
+        session.cameraConfig = cameraConfigList[0]
+
         session.configure(config)
         arSceneView.setupSession(session)
         session.apply {
@@ -59,6 +66,7 @@ class PlacesArFragment : ArFragment() {
             pause()
             resume()
         }
+
         if ((activity as MainActivity).setupAugmentedImagesDB(config, session))
             Log.d("arcoreimg_db", "success")
         else
