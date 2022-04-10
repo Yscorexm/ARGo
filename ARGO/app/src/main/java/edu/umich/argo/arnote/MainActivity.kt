@@ -287,7 +287,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if (image != null) {
                 imageUri = saveImage(image, applicationContext, "ARcore")
             }
-//            imageUri = image?.let { it1 -> getUriFromBitmap(it1) }
             val cropIntent = initCropIntent()
             cropIntent?.putExtra(Intent.EXTRA_STREAM, imageUri)
             doCrop(cropIntent)
