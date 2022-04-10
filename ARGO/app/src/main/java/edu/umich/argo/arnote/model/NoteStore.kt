@@ -18,6 +18,18 @@ import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import android.graphics.Bitmap
+
+import android.graphics.BitmapFactory
+
+import android.os.AsyncTask
+import android.widget.ImageView
+import edu.umich.argo.arnote.R
+import edu.umich.argo.arnote.saveImage
+import java.io.InputStream
+import java.lang.Exception
+import java.net.URL
+
 
 /*
 Supports add note, edit note, load note
@@ -170,7 +182,7 @@ object NoteStore {
             .url(finalUrl)
             .post(mpFD.build())
             .build()
-
+        Toast.makeText(context, "Uploading...", Toast.LENGTH_LONG).show()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -195,7 +207,7 @@ object NoteStore {
     }
 
     // retrieve a note from backend and add to local
-    fun addNoteByID(ID:String, completion: ()->Unit) {
+    fun addNoteByID(ID:String, completion: (Place)->Unit) {
         val request = Request.Builder()
             .url(serverUrl + "getnote/?ID="+ID)
             .build()
@@ -214,16 +226,17 @@ object NoteStore {
                     }
                     val chattEntry = chattsReceived as JSONArray
                     if (chattEntry.length() == nFields) {
-                        addNoteToStore(Place(id = storeSize().toString(),
-                            message=chattEntry[1].toString(),
-                            type=chattEntry[10].toString(),
-                            lat=chattEntry[2].toString(),
-                            lng=chattEntry[3].toString(),
-                            x=chattEntry[4].toString(),
-                            y=chattEntry[5].toString(),
-                            z=chattEntry[6].toString(),
-                            orientation=chattEntry[7].toString(),
-                            imageUri=chattEntry[9].toString(),
+                        completion(Place(
+                            id = storeSize().toString(),
+                            message = chattEntry[1].toString(),
+                            type = chattEntry[10].toString(),
+                            lat = chattEntry[2].toString(),
+                            lng = chattEntry[3].toString(),
+                            x = chattEntry[4].toString(),
+                            y = chattEntry[5].toString(),
+                            z = chattEntry[6].toString(),
+                            orientation = chattEntry[7].toString(),
+                            imageUri = chattEntry[9].toString(),
                         ))
                     } else {
                         Log.e(TAG,
@@ -232,9 +245,10 @@ object NoteStore {
                         )
                     }
                 }
-                completion()
+
             }
         })
     }
 }
+
 

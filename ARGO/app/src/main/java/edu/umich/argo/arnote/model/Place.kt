@@ -38,7 +38,7 @@ data class Place(
     val y: String,
     val z: String,
     val orientation: String,
-    val imageUri: String
+    var imageUri: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Place) {
