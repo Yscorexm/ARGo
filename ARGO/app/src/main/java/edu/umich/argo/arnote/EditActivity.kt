@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.NoteStore.postNote

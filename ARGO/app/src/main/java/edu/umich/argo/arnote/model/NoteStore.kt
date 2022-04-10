@@ -70,6 +70,8 @@ object NoteStore {
     private const val serverUrl = "https://441.scarletissimo.cf/"
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
+    var toAdd = mutableListOf<Bitmap>()
+    var toAdd_name = mutableListOf<String>()
 
     // transform all GPS info in "gps_notes.json" into jsonStr
     private fun file2JsonStr(context: Context): String? {

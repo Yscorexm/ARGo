@@ -1,10 +1,8 @@
 package edu.umich.argo.arnote
 
 import androidx.appcompat.app.AppCompatActivity
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,18 +14,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
-import com.google.a.b.a.a.a.e
 import edu.umich.argo.arnote.model.NoteListAdapter
 import edu.umich.argo.arnote.model.NoteStore
 import edu.umich.argo.arnote.model.NoteStore.addNoteByID
 import edu.umich.argo.arnote.model.NoteStore.getNote
-import edu.umich.argo.arnote.model.Place
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.InputStream
-import java.lang.Exception
 import java.net.URL
 
 class NoteActivity : AppCompatActivity() {
@@ -57,8 +51,6 @@ class NoteActivity : AppCompatActivity() {
         }
     }
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
@@ -73,6 +65,7 @@ class NoteActivity : AppCompatActivity() {
         initImports()
         noteListView.postDelayed(mRunnable, refreshTime)
     }
+
     private fun initNoteListView(){
         val notes=getNote()
         noteListAdapter=NoteListAdapter(this,notes)
@@ -106,6 +99,8 @@ class NoteActivity : AppCompatActivity() {
                     val bitmap=getBitmap(it.imageUri)
                     if (bitmap!=null){
                         it.imageUri = saveImage(bitmap,applicationContext,"ARcore").toString()
+                        NoteStore.toAdd.add(bitmap)
+                        NoteStore.toAdd_name.add(NoteStore.storeSize().toString())
                     }
 
                     withContext(Dispatchers.Main) {

@@ -99,10 +99,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentPlaceNode: PlaceNode? = null
 
     // augmented images
-    private var imageDatabase: AugmentedImageDatabase? = null
-    private val arAugImageDBPath = "argo_item_notes_database.imgdb"
     var imageUri: Uri? = null
-    var tmpImageUri: Uri? = null
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
     private var trackingItemNotes: Set<String> = setOf()
 
@@ -294,11 +291,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val cropIntent = initCropIntent()
             cropIntent?.putExtra(Intent.EXTRA_STREAM, imageUri)
             doCrop(cropIntent)
-            imageDatabase?.addImage(storeSize().toString(), image)
-            arFragment.arSceneView.session?.apply {
-                val changedConfig = config
-                changedConfig.augmentedImageDatabase = imageDatabase
-                configure(changedConfig)
+            if (image != null) {
+                arFragment.addImage(storeSize().toString(), image)
             }
         }
         gpsButton.setOnClickListener {
@@ -337,20 +331,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         addButton.visibility = VISIBLE
         itemButton.visibility = INVISIBLE
         gpsButton.visibility = INVISIBLE
+        arFragment.addImportImage()
 //        if (anchorNode != null) {
 //            if (!anchorNode?.isTracking!!) {
 //                anchorSelected = false
 //                setUpAr()
 //            }
 //        }
+
     }
 
     override fun onPause() {
         super.onPause()
 //        sensorManager.unregisterListener(this)
-        applicationContext.openFileOutput(arAugImageDBPath, Context.MODE_PRIVATE).use {
-            imageDatabase?.serialize(it)
-        }
+        arFragment.dumpDB(applicationContext)
         dumpNote(applicationContext)
     }
 
@@ -523,12 +517,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
-        imageDatabase = AugmentedImageDatabase(session)
 //        val filename = "default.jpg"
 //        val bitmap = loadAugmentedImage(filename) ?: return false
 //        imageDatabase.addImage("default", bitmap)
-        imageDatabase = AugmentedImageDatabase.deserialize(session, application.openFileInput(arAugImageDBPath))
-        config.augmentedImageDatabase = imageDatabase
+        config.augmentedImageDatabase = arFragment.loadDB(session, applicationContext)
         session.configure(config)
         return true
     }

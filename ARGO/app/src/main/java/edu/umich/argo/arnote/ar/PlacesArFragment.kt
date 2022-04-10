@@ -15,17 +15,23 @@
 package edu.umich.argo.arnote.ar
 
 import android.Manifest
+import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
+import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Config
 import com.google.ar.core.Session
 import com.google.ar.sceneform.ux.ArFragment
 import edu.umich.argo.arnote.MainActivity
-
-
+import edu.umich.argo.arnote.model.NoteStore
 
 
 class PlacesArFragment : ArFragment() {
     private var anchorSelected: Boolean = false
+    var imageDatabase: AugmentedImageDatabase? = null
+    var numImageInDB = 0
+    private val arAugImageDBPath = "argo_item_notes_database.imgdb"
+
     override fun getAdditionalPermissions(): Array<String> =
         listOf(Manifest.permission.ACCESS_FINE_LOCATION).toTypedArray()
 
@@ -58,5 +64,36 @@ class PlacesArFragment : ArFragment() {
         else
             Log.e("arcoreimg_db","faliure setting up db")
         return config
+    }
+
+    fun dumpDB(context: Context) {
+        context.openFileOutput(arAugImageDBPath, Context.MODE_PRIVATE).use {
+            imageDatabase?.serialize(it)
+        }
+    }
+
+    fun loadDB(session: Session, context: Context): AugmentedImageDatabase? {
+        imageDatabase = AugmentedImageDatabase(session)
+        imageDatabase = AugmentedImageDatabase.deserialize(session, context.openFileInput(
+            arAugImageDBPath
+        ))
+        return imageDatabase
+    }
+
+    fun addImage(imgName: String, bitmap: Bitmap) {
+        imageDatabase?.addImage(imgName, bitmap)
+        this.arSceneView.session?.apply {
+            val changedConfig = config
+            changedConfig.augmentedImageDatabase = imageDatabase
+            configure(changedConfig)
+        }
+    }
+
+    fun addImportImage() {
+        for (i in 0 until NoteStore.toAdd.size) {
+            addImage(NoteStore.toAdd_name[i], NoteStore.toAdd[i])
+        }
+        NoteStore.toAdd.clear()
+        NoteStore.toAdd_name.clear()
     }
 }
