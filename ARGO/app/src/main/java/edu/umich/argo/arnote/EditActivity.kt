@@ -1,5 +1,6 @@
 package edu.umich.argo.arnote
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -30,9 +31,9 @@ class EditActivity : AppCompatActivity() {
         placeId?.let {
             shareButton.isEnabled = true
             val places = getNote()
-            note = places.filter {
+            note = places.first {
                 it.id == placeId
-            }.first()
+            }
             text.hint = note?.message
             text.setText(note?.message, TextView.BufferType.EDITABLE)
         }?: let {
@@ -40,6 +41,7 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initToolbar() {
         toolbar.title = ""
         toolbartitle = toolbar.findViewById(R.id.toolbar_title)
@@ -57,7 +59,7 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
-    fun saveNote(view: View?) {
+    fun saveNote() {
         val editText = findViewById<EditText>(R.id.message)
         val intent = Intent()
         intent.putExtra("message", editText.text.toString())
