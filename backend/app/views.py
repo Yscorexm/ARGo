@@ -32,8 +32,8 @@ def postnoteplace(request):
         imageurl = None
         
     cursor = connection.cursor()
-    cursor.execute('INSERT INTO notes (message, lat, lng, x, y, z, orientation, imageurl) VALUES'
-                   '(%s, %s, %s, %s, %s, %s, %s, %s)  RETURNING ID;', (message, lat, lng, x, y, z, orientation, imageurl))
+    cursor.execute('INSERT INTO notes (message, lat, lng, x, y, z, orientation, imageUri, type) VALUES'
+                   '(%s, %s, %s, %s, %s, %s, %s, %s, %s)  RETURNING ID;', (message, lat, lng, x, y, z, orientation, imageurl, 'gps'))
 
     ID = cursor.fetchone()[0]
 
@@ -53,3 +53,27 @@ def getnote(request):
     response = {}
     response['notes'] = rows
     return JsonResponse(response)
+
+@csrf_exempt
+def postnoteimage(request):
+    if request.method != 'POST':
+        return HttpResponse(status=400)
+
+    # loading form-encoded data
+    message = request.POST.get("message")
+    if request.FILES.get("image"):
+        content = request.FILES['image']
+        filename = "argo"+str(time.time())+".png"
+        fs = FileSystemStorage()
+        filename = fs.save(filename, content)
+        imageurl = fs.url(filename)
+    else:
+        imageurl = None
+        
+    cursor = connection.cursor()
+    cursor.execute('INSERT INTO notes (message, imageUri, type) VALUES'
+                   '(%s, %s, %s)  RETURNING ID;', (message, imageurl, 'item'))
+
+    ID = cursor.fetchone()[0]
+
+    return JsonResponse({"ID":ID})
