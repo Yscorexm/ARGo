@@ -31,6 +31,7 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var importButton: View
     private lateinit var cardView: CardView
     private lateinit var childImport: View
+    // TODO: add the cancel button
     private lateinit var editView: EditText
     private lateinit var noteListAdapter: NoteListAdapter
     var m_currentToast: Toast? = null
@@ -112,6 +113,7 @@ class NoteActivity : AppCompatActivity() {
             }
             editView.setText("")
         }
+        // TODO: set cancel button onclick listener
     }
 
     fun importNote(view: View?) {
