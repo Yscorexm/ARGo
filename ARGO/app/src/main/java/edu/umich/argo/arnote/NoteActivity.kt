@@ -123,6 +123,7 @@ class NoteActivity : AppCompatActivity() {
     fun importNote(view: View?) {
         view?.visibility = INVISIBLE
         cardView.visibility = VISIBLE
+        editView.setText("")
     }
 }
 
