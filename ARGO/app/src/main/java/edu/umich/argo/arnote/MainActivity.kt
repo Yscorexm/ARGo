@@ -19,16 +19,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
-import android.graphics.ImageFormat.NV21
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -68,7 +65,7 @@ import edu.umich.argo.arnote.model.getPositionVector
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
 
     private lateinit var arFragment: PlacesArFragment
     private lateinit var toolbar: Toolbar
@@ -97,7 +94,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var currentPlaceNode: PlaceNode? = null
 
     // augmented images
-    var imageUri: Uri? = null
+    private var imageUri: Uri? = null
     private lateinit var forCropResult: ActivityResultLauncher<Intent>
     private var trackingItemNotes: Set<String> = setOf()
 
@@ -130,10 +127,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 if (result.resultCode == Activity.RESULT_OK) {
                     result.data?.data.let {
                         imageUri?.run {
-                            if (!toString().contains("ORIGINAL")) {
+                            // Not implemented
+                            //if (!toString().contains("ORIGINAL")) {
                                 // delete uncropped photo taken for posting
 //                                contentResolver.delete(this, null, null)
-                            }
+                            //}
                         }
                         imageUri = it
                         createItemLauncher.launch(Intent(this,
@@ -226,6 +224,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         listLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){}
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initToolbar() {
         toolbar.title = ""
         toolbartitle = toolbar.findViewById(R.id.toolbar_title)
@@ -250,11 +249,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             val bytes =
                 imageObj?.let {
-                    it1 -> YUV_420_888toNV21(it1)?.let {
-                        it1 -> imageObj?.let {
-                            it2 -> NV21toJPEG(it1, it2.width, imageObj.height)
-                        }
-                    }
+                    it1 ->
+                    nv21toJPEG(yuv_420_888toNV21(it1), imageObj.width, imageObj.height)
                 }
             val image = bytes?.let { it1 ->
                 BitmapFactory.decodeByteArray(bytes, 0, it1.size, null)
@@ -274,9 +270,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 // Create anchor
                 val anchor = hitResult.createAnchor()
                 val newAnchorNode = AnchorNode(anchor)
-                newAnchorNode?.setParent(arFragment.arSceneView.scene)
+                newAnchorNode.setParent(arFragment.arSceneView.scene)
                 otherAnchorNodes.add(newAnchorNode)
-                addNote(newAnchorNode!!)
+                addNote(newAnchorNode)
             }
             itemButton.visibility = INVISIBLE
             gpsButton.visibility = INVISIBLE
@@ -316,7 +312,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun setUpAr() {
-        arFragment.arSceneView.scene.addOnUpdateListener { frameTime ->
+        arFragment.arSceneView.scene.addOnUpdateListener {
             val frame = arFragment.arSceneView.arFrame
             // get the trackables to ensure planes are detected
             if (frame != null) {
@@ -335,7 +331,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             val y = anchor.pose.ty()
                             val z = anchor.pose.tz()
                             val distance = kotlin.math.sqrt((x * x + y * y + z * z).toDouble())
-                            Log.d(TAG, distance.toString())
+                            Log.d(tag, distance.toString())
                             if (distance > 50) {
                                 continue
                             }
@@ -378,7 +374,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun addPlaces(anchorNode: AnchorNode) {
         val currentLocation = currentLocation
         if (currentLocation == null) {
-            Log.w(TAG, "Location has not been determined yet")
+            Log.w(tag, "Location has not been determined yet")
             return
         }
 
@@ -409,12 +405,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun showInfoWindow(note: Note, anchorNode: AnchorNode) {
         // Show in AR
-        currentPlaceNode = anchorNode?.children?.filter {
-            it is PlaceNode
-        }?.first {
-            val otherPlace = (it as PlaceNode).note ?: return@first false
+        currentPlaceNode = anchorNode.children?.filterIsInstance<PlaceNode>()?.first {
+            val otherPlace = it.note ?: return@first false
             return@first otherPlace == note
-        } as? PlaceNode
+        }
         val intent = Intent(this, EditActivity::class.java)
         intent.putExtra("placeId", note.id)
         editLauncher.launch(intent)
@@ -537,7 +531,3 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 }
-
-
-// TODO(xcy): move these functions to another file
-/// @param folderName can be your app's name
