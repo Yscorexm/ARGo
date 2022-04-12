@@ -4,14 +4,10 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.database.Cursor
+import android.net.Uri
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
-import android.text.Editable
 import android.util.Log
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley.newRequestQueue
-import com.google.gson.Gson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
@@ -19,20 +15,53 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import android.graphics.Bitmap
+
 
 /*
 Supports add note, edit note, load note
 */
 
+fun Uri.toFile(context: Context): File? {
+
+    if (!(authority == "media" || authority == "com.google.android.apps.photos.contentprovider")) {
+        // for on-device media files only
+        Toast.makeText(context, "Media file not on device", Toast.LENGTH_LONG).show()
+        Log.d("Uri.toFile", authority.toString())
+        return null
+    }
+
+    if (scheme.equals("content")) {
+        var cursor: Cursor? = null
+        try {
+            cursor = context.contentResolver.query(
+                this, arrayOf("_data"),
+                null, null, null
+            )
+
+            cursor?.run {
+                moveToFirst()
+                return File(getString(getColumnIndexOrThrow("_data")))
+            }
+        } finally {
+            cursor?.close()
+        }
+    }
+    return null
+}
+
 object NoteStore {
-    private val TAG="NoteStore"
-    var notes = mutableListOf<Place>()
-    var _notes = mutableListOf<JsonPlace>()
-    private val nFields = 10
-    private const val serverUrl = "https://18.216.173.236/"
+    private const val TAG="NoteStore"
+    private var notes = mutableListOf<Note>()
+    private const val nFields = 11
+    private const val serverUrl = "https://441.scarletissimo.cf/"
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
+    var toAdd = mutableListOf<Bitmap>()
+    var toAdd_name = mutableListOf<String>()
 
     // transform all GPS info in "gps_notes.json" into jsonStr
     private fun file2JsonStr(context: Context): String? {
@@ -53,35 +82,22 @@ object NoteStore {
 
     // store GPS information of all notes to "gps_notes.json"
     fun dumpNote(context: Context) {
-        val jsonList = Json.encodeToString(_notes)
+        val jsonList = Json.encodeToString(notes)
         context.openFileOutput(gpsFilePath, Context.MODE_PRIVATE).use {
             it.write(jsonList.toByteArray())
         }
     }
 
-    fun addNoteToStore(place: Place) {
-        _notes.add(
-            JsonPlace(
-                id = place.id,
-                message = place.message,
-                lat = place.lat,
-                lng = place.lng,
-                x = place.x,
-                y = place.y,
-                z = place.z,
-                orientation = place.orientation
-            )
-        )
-        notes.add(place)
+    fun addNoteToStore(note: Note) {
+        notes.add(note)
     }
 
-    fun editNote(place: Place?, message: String) {
-        val targetId = place?.id
+    fun editNote(note: Note?, message: String) {
+        val targetId = note?.id
         for (i in 0 until notes.size) {
             if (targetId != null) {
                 if (i == targetId.toInt()) {
                     notes[i].message = message
-                    _notes[i].message = message
                 }
             }
         }
@@ -94,62 +110,77 @@ object NoteStore {
     fun loadNote(context: Context) {
         val jsonStr = file2JsonStr(context) ?: return
         val data = JSONArray(jsonStr)
-        val gson = Gson()
         notes.clear()
-        _notes.clear()
         for (i in 0 until data.length()) {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
-                _notes.add(JsonPlace(
-                    id = noteEntry.get("id").toString(),
-                    message = noteEntry.get("message").toString(),
-                    lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString(),
-                    x = noteEntry.get("x").toString(),
-                    y = noteEntry.get("y").toString(),
-                    z = noteEntry.get("z").toString(),
-                    orientation = noteEntry.get("orientation").toString(),
-                ))
-            }
-            if (noteEntry != null) {
-                notes.add(Place(
-                    id = noteEntry.get("id").toString(),
-                    message = noteEntry.get("message").toString(),
-                    lat = noteEntry.get("lat").toString(),
-                    lng = noteEntry.get("lng").toString(),
-                    x = noteEntry.get("x").toString(),
-                    y = noteEntry.get("y").toString(),
-                    z = noteEntry.get("z").toString(),
-                    orientation = noteEntry.get("orientation").toString(),
-                ))
+                notes.add(
+                    Note(
+                        id = noteEntry.get("id").toString(),
+                        type = noteEntry.get("type").toString(),
+                        message = noteEntry.get("message").toString(),
+                        lat = noteEntry.get("lat").toString(),
+                        lng = noteEntry.get("lng").toString(),
+                        x = noteEntry.get("x").toString(),
+                        y = noteEntry.get("y").toString(),
+                        z = noteEntry.get("z").toString(),
+                        orientation = noteEntry.get("orientation").toString(),
+                        imageUri = noteEntry.get("imageUri").toString(),
+                    )
+                )
             }
         }
     }
 
-    fun getNote(): MutableList<Place> {
+    fun getNote(): MutableList<Note> {
         return notes
     }
 
-    // add a local place to backend
-    fun postNote(context: Context, place: Place) {
-        val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("message", place.message)
-            .addFormDataPart("lat", place.lat)
-            .addFormDataPart("lng", place.lng)
-            .addFormDataPart("x", place.x)
-            .addFormDataPart("y", place.y)
-            .addFormDataPart("z", place.z)
+    fun getNotebyId(id: String) : Note {
+        val noteResult = notes.filter {
+            it.id == id
+        }
+        if (noteResult.isEmpty()) {
+            error("Can't find note")
+        }
+        return noteResult[0]
+    }
 
+    // add a local note to backend
+    fun postNote(context: Context, note: Note) {
+        val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("message", note.message)
+        var finalUrl=serverUrl
+        if (note.type=="gps"){
+            mpFD.addFormDataPart("lat", note.lat)
+                .addFormDataPart("lng", note.lng)
+                .addFormDataPart("x", note.x)
+                .addFormDataPart("y", note.y)
+                .addFormDataPart("z", note.z)
+                .addFormDataPart("orientation",note.orientation)
+
+            finalUrl+="postnoteplace/"
+        }else{
+            val imageUri=Uri.parse(note.imageUri)
+            imageUri?.run {
+                toFile(context)?.let {
+                    mpFD.addFormDataPart("image", "itemImage",
+                        it.asRequestBody("image/png".toMediaType()))
+                } ?: Toast.makeText(context, "Unsupported image format", Toast.LENGTH_LONG).show()
+            }
+            finalUrl+="postnoteimage/"
+        }
         val request = Request.Builder()
-            .url(serverUrl+"postnoteplace/")
+            .url(finalUrl)
             .post(mpFD.build())
             .build()
-
+        Toast.makeText(context, "Uploading...", Toast.LENGTH_LONG).show()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as Activity).runOnUiThread {
                     Toast.makeText(context, "Share note fails!", Toast.LENGTH_LONG).show()
+                    e.printStackTrace()
                 }
             }
 
@@ -168,7 +199,7 @@ object NoteStore {
     }
 
     // retrieve a note from backend and add to local
-    fun addNoteByID(ID:String, completion: ()->Unit) {
+    fun addNoteByID(ID:String, completion: (Note)->Unit) {
         val request = Request.Builder()
             .url(serverUrl + "getnote/?ID="+ID)
             .build()
@@ -187,14 +218,17 @@ object NoteStore {
                     }
                     val chattEntry = chattsReceived as JSONArray
                     if (chattEntry.length() == nFields) {
-                        addNoteToStore(Place(id = storeSize().toString(),
+                        completion(Note(
+                            id = storeSize().toString(),
                             message = chattEntry[1].toString(),
-                            lat=chattEntry[2].toString(),
-                            lng=chattEntry[3].toString(),
-                            x=chattEntry[4].toString(),
-                            y=chattEntry[5].toString(),
-                            z=chattEntry[6].toString(),
+                            type = chattEntry[10].toString(),
+                            lat = chattEntry[2].toString(),
+                            lng = chattEntry[3].toString(),
+                            x = chattEntry[4].toString(),
+                            y = chattEntry[5].toString(),
+                            z = chattEntry[6].toString(),
                             orientation = chattEntry[7].toString(),
+                            imageUri = chattEntry[9].toString(),
                         ))
                     } else {
                         Log.e(TAG,
@@ -203,8 +237,10 @@ object NoteStore {
                         )
                     }
                 }
-                completion()
+
             }
         })
     }
 }
+
+

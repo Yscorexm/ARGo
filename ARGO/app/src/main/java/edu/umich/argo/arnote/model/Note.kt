@@ -24,21 +24,24 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * A model describing details about a Place (location, name, type, etc.).
+ * A model describing details about a Note (location, name, type, etc.).
  */
 
-data class Place(
+@Serializable
+data class Note(
     val id: String,
+    val type: String,  // (item | gps)
     var message: String,
     val lat: String,
     val lng: String,
     val x: String,
     val y: String,
     val z: String,
-    val orientation: String
+    val orientation: String,
+    var imageUri: String
 ) {
     override fun equals(other: Any?): Boolean {
-        if (other !is Place) {
+        if (other !is Note) {
             return false
         }
         return this.id == other.id
@@ -48,12 +51,13 @@ data class Place(
         return this.id.hashCode()
     }
 
-    val latLng: LatLng
-        get() = LatLng(lat.toDouble(), lng.toDouble())
+    fun getLatLng(): LatLng {
+        return LatLng(lat.toDouble(), lng.toDouble())
+    }
 }
 
-fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
-    val placeLatLng = this.latLng
+fun Note.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
+    val placeLatLng = this.getLatLng()
     val heading = latLng.sphericalHeading(placeLatLng)
     val distance = getDistance(latLng)
     val x1 = distance * sin(azimuth + heading).toFloat()
@@ -64,32 +68,20 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val x = x1 + x2
     val y = 1f
     val z = z1 + z2
-    Log.d("Place", this.orientation)
-    Log.d("Place", x1.toString() + " " + x2.toString() + " " + distance.toString())
-    Log.d("Place", Vector3(x, y, z).toString())
+    Log.d("Note", this.orientation)
+    Log.d("Note", "$x1 $x2 $distance")
+    Log.d("Note", Vector3(x, y, z).toString())
     return Vector3(x, y, z)
 }
 
-fun Place.getDistance(latLng: LatLng): Float {
+fun Note.getDistance(latLng: LatLng): Float {
     val startLocation = Location("Start")
-    startLocation.latitude = this.latLng.latitude
-    startLocation.longitude = this.latLng.longitude
+    startLocation.latitude = this.getLatLng().latitude
+    startLocation.longitude = this.getLatLng().longitude
     val endLocation = Location("end")
     endLocation.latitude = latLng.latitude
     endLocation.longitude = latLng.longitude
     val distance = startLocation.distanceTo(endLocation)
-    Log.d("Place", distance.toString())
+    Log.d("Note", distance.toString())
     return distance
 }
-
-@Serializable
-class JsonPlace(
-    val id: String,
-    var message: String,
-    val lat: String,
-    val lng: String,
-    val x: String,
-    val y: String,
-    val z: String,
-    val orientation: String
-)
