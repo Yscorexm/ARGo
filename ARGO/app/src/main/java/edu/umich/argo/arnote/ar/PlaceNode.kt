@@ -26,7 +26,7 @@ class PlaceNode(
     val note: Note?
 ) : Node() {
 
-    var placeRenderable: ViewRenderable? = null
+    private var placeRenderable: ViewRenderable? = null
     var textViewPlace: TextView? = null
 
     override fun onActivate() {

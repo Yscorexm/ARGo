@@ -125,37 +125,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         setButtons()
 
         loadNote(applicationContext)
-        val places = getNote()
-        // TODO: delete the default note
-        if (places?.size ?: 0 == 0) {
-            addNoteToStore(
-                Note(
-                    storeSize().toString(),
-                    "gps",
-                    "note1, balabala",
-                    lat=(42.3009473).toString(),
-                    lng=(-83.73001909999999).toString(),
-                    x=(1.00).toString(),
-                    y=(1.00).toString(),
-                    z=(1.00).toString(),
-                    orientation = (0.00).toString(),
-                    ""
-                ),
-            )
-            addNoteToStore(
-                Note(storeSize().toString(),
-                    "gps",
-                    "note2, wt",
-                    lat=(42.299268).toString(),
-                    lng=(-83.717808).toString(),
-                    x=(1.00).toString(),
-                    y=(1.00).toString(),
-                    z=(1.00).toString(),
-                    orientation = (0.00).toString(),
-                    ""
-                )
-            )
-        }
         setUpAr()
 
         forCropResult =
@@ -515,22 +484,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
-//        val filename = "default.jpg"
-//        val bitmap = loadAugmentedImage(filename) ?: return false
-//        imageDatabase.addImage("default", bitmap)
         config.augmentedImageDatabase = arFragment.loadDB(session, applicationContext)
         session.configure(config)
         return true
-    }
-
-    // TODO(ltj): remove this function and above three lines
-    private fun loadAugmentedImage(imagename: String): Bitmap? {
-        try {
-            assets.open(imagename).use { return BitmapFactory.decodeStream(it) }
-        } catch (e: IOException) {
-            Toast.makeText(this, "Error load image", Toast.LENGTH_LONG).show()
-        }
-        return null
     }
 
     private fun placeObject(arFragment: ArFragment, anchor: Anchor, note: Note) {
@@ -606,8 +562,8 @@ fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
 private fun contentValues() : ContentValues {
     val values = ContentValues()
     values.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-    values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-    values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+    values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+    values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
     return values
 }
 

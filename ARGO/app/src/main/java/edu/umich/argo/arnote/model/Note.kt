@@ -69,7 +69,7 @@ fun Note.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val y = 1f
     val z = z1 + z2
     Log.d("Note", this.orientation)
-    Log.d("Note", x1.toString() + " " + x2.toString() + " " + distance.toString())
+    Log.d("Note", "$x1 $x2 $distance")
     Log.d("Note", Vector3(x, y, z).toString())
     return Vector3(x, y, z)
 }
