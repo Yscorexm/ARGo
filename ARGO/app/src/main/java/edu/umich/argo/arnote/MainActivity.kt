@@ -582,9 +582,9 @@ private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
 // TODO: change to kotlin style
 private fun YUV_420_888toNV21(image: Image): ByteArray {
     val nv21: ByteArray
-    val yBuffer: ByteBuffer = image.getPlanes().get(0).getBuffer()
-    val uBuffer: ByteBuffer = image.getPlanes().get(1).getBuffer()
-    val vBuffer: ByteBuffer = image.getPlanes().get(2).getBuffer()
+    val yBuffer: ByteBuffer = image.planes[0].buffer
+    val uBuffer: ByteBuffer = image.planes[1].buffer
+    val vBuffer: ByteBuffer = image.planes[2].buffer
     val ySize: Int = yBuffer.remaining()
     val uSize: Int = uBuffer.remaining()
     val vSize: Int = vBuffer.remaining()
@@ -603,4 +603,3 @@ private fun NV21toJPEG(nv21: ByteArray, width: Int, height: Int): ByteArray? {
     yuv.compressToJpeg(Rect(0, 0, width, height), 100, out)
     return out.toByteArray()
 }
-
