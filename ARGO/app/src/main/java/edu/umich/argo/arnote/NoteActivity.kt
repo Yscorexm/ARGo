@@ -117,13 +117,13 @@ class NoteActivity : AppCompatActivity() {
         childCancel.setOnClickListener {
             importButton.visibility = VISIBLE
             cardView.visibility = INVISIBLE
+            editView.setText("")
         }
     }
 
     fun importNote(view: View?) {
         view?.visibility = INVISIBLE
         cardView.visibility = VISIBLE
-        editView.setText("")
     }
 }
 
