@@ -1,5 +1,6 @@
 package edu.umich.argo.arnote
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -34,9 +35,9 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var childCancel: View
     private lateinit var editView: EditText
     private lateinit var noteListAdapter: NoteListAdapter
-    var m_currentToast: Toast? = null
+    private var m_currentToast: Toast? = null
 
-    fun showToast(text: String?) {
+    private fun showToast(text: String?) {
         if (m_currentToast != null) {
             m_currentToast!!.cancel()
         }
@@ -74,6 +75,7 @@ class NoteActivity : AppCompatActivity() {
         noteListView.adapter=noteListAdapter
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initToolbar() {
         toolbar.title = ""
         toolbartitle = toolbar.findViewById(R.id.toolbar_title)
