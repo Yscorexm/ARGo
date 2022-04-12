@@ -31,7 +31,7 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var importButton: View
     private lateinit var cardView: CardView
     private lateinit var childImport: View
-    // TODO: add the cancel button
+    private lateinit var childCancel: View
     private lateinit var editView: EditText
     private lateinit var noteListAdapter: NoteListAdapter
     var m_currentToast: Toast? = null
@@ -61,6 +61,7 @@ class NoteActivity : AppCompatActivity() {
         cardView = findViewById(R.id.import_box)
         childImport = findViewById(R.id.child_import)
         editView=findViewById(R.id.input_import)
+        childCancel=findViewById(R.id.child_cancel)
         initToolbar()
         initNoteListView()
         initImports()
@@ -113,7 +114,11 @@ class NoteActivity : AppCompatActivity() {
             }
             editView.setText("")
         }
-        // TODO: set cancel button onclick listener
+        childCancel.setOnClickListener {
+            importButton.visibility = VISIBLE
+            cardView.visibility = INVISIBLE
+            editView.setText("")
+        }
     }
 
     fun importNote(view: View?) {

@@ -125,37 +125,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         setButtons()
 
         loadNote(applicationContext)
-        val places = getNote()
-        // TODO: delete the default note
-        if (places?.size ?: 0 == 0) {
-            addNoteToStore(
-                Note(
-                    storeSize().toString(),
-                    "gps",
-                    "note1, balabala",
-                    lat=(42.3009473).toString(),
-                    lng=(-83.73001909999999).toString(),
-                    x=(1.00).toString(),
-                    y=(1.00).toString(),
-                    z=(1.00).toString(),
-                    orientation = (0.00).toString(),
-                    ""
-                ),
-            )
-            addNoteToStore(
-                Note(storeSize().toString(),
-                    "gps",
-                    "note2, wt",
-                    lat=(42.299268).toString(),
-                    lng=(-83.717808).toString(),
-                    x=(1.00).toString(),
-                    y=(1.00).toString(),
-                    z=(1.00).toString(),
-                    orientation = (0.00).toString(),
-                    ""
-                )
-            )
-        }
         setUpAr()
 
         forCropResult =
@@ -169,7 +138,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             }
                         }
                         imageUri = it
-                        createItemLauncher.launch(Intent(this, EditActivity::class.java))
+                        createItemLauncher.launch(Intent(this,
+                            EditActivity::class.java))
                     }
                 } else {
                     Log.d("Crop", result.resultCode.toString())
@@ -178,10 +148,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun getPermission() {
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+                results ->
             results.forEach {
                 if (!it.value) {
-                    Toast.makeText(this, "Location access denied", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Location access denied",
+                        Toast.LENGTH_LONG).show()
                     finish()
                 }
             }
@@ -193,7 +165,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun createLaunchers() {
-        createLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        createLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")?:""
 
@@ -223,7 +196,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
             }
         }
-        createItemLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        createItemLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")?:""
                 val place = Note(
@@ -278,11 +252,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             val bytes =
                 imageObj?.let {
-                        it1 -> YUV_420_888toNV21(it1)?.let { it1 -> imageObj?.let {
+                    it1 -> YUV_420_888toNV21(it1)?.let {
+                        it1 -> imageObj?.let {
                             it2 -> NV21toJPEG(it1, it2.width, imageObj.height)
-                        } }
+                        }
+                    }
                 }
-            val image = bytes?.let { it1 -> BitmapFactory.decodeByteArray(bytes, 0, it1.size, null) }
+            val image = bytes?.let { it1 ->
+                BitmapFactory.decodeByteArray(bytes, 0, it1.size, null)
+            }
             if (image != null) {
                 imageUri = saveImage(image, applicationContext, "ARcore")
             }
@@ -330,13 +308,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         itemButton.visibility = INVISIBLE
         gpsButton.visibility = INVISIBLE
         arFragment.addImportImage()
-//        if (anchorNode != null) {
-//            if (!anchorNode?.isTracking!!) {
-//                anchorSelected = false
-//                setUpAr()
-//            }
-//        }
-
     }
 
     override fun onPause() {
@@ -385,7 +356,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                 for (img in updatedAugmentedImages) {
                     if (img.trackingState == TrackingState.TRACKING) {
-
                         Log.d("AugImage", img.name)
 
                         // You can also check which image this is based on AugmentedImage.getName().
@@ -415,10 +385,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         val places = getNote()
-        if (places == null) {
-            Log.w(TAG, "No places to put")
-            return
-        }
 
         for (place in places) {
             // Skip item based note
@@ -435,7 +401,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
 
             placeNode.setParent(anchorNode)
-            placeNode.localPosition = place.getPositionVector(orientationAngles[0], currentLocation.getLatLng())
+            placeNode.localPosition = place.getPositionVector(orientationAngles[0],
+                currentLocation.getLatLng())
             placeNode.setOnTapListener { _, _ ->
                 showInfoWindow(place, anchorNode)
             }
@@ -458,7 +425,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun getCurrentLocation() {
         //Get current location of the user
         LocationServices.getFusedLocationProviderClient(applicationContext)
-            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY,
+                CancellationTokenSource().token)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     currentLocation = Note(
@@ -483,7 +451,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val openGlVersionString = activityManager.deviceConfigurationInfo.glEsVersion
         if (openGlVersionString.toDouble() < 3.0) {
-            Toast.makeText(this, "Sceneform requires OpenGL ES 3.0 or later", Toast.LENGTH_LONG)
+            Toast.makeText(this, "Sceneform requires OpenGL ES 3.0 or later",
+                Toast.LENGTH_LONG)
                 .show()
             finish()
             return false
@@ -499,9 +468,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+            System.arraycopy(event.values, 0, accelerometerReading, 0,
+                accelerometerReading.size)
         } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
+            System.arraycopy(event.values, 0, magnetometerReading, 0,
+                magnetometerReading.size)
         }
 
         // Update rotation matrix, which is needed to update orientation angles.
@@ -515,22 +486,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun setupAugmentedImagesDB(config: Config, session: Session): Boolean {
-//        val filename = "default.jpg"
-//        val bitmap = loadAugmentedImage(filename) ?: return false
-//        imageDatabase.addImage("default", bitmap)
         config.augmentedImageDatabase = arFragment.loadDB(session, applicationContext)
         session.configure(config)
         return true
-    }
-
-    // TODO(ltj): remove this function and above three lines
-    private fun loadAugmentedImage(imagename: String): Bitmap? {
-        try {
-            assets.open(imagename).use { return BitmapFactory.decodeStream(it) }
-        } catch (e: IOException) {
-            Toast.makeText(this, "Error load image", Toast.LENGTH_LONG).show()
-        }
-        return null
     }
 
     private fun placeObject(arFragment: ArFragment, anchor: Anchor, note: Note) {
@@ -547,11 +505,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun initCropIntent(): Intent? {
-        // Is there any published Activity on device to do image cropping?
         val intent = Intent("com.android.camera.action.CROP")
         intent.type = "image/*"
         val listofCroppers = packageManager.queryIntentActivities(intent, 0)
-        // No image cropping Activity published
         if (listofCroppers.size == 0) {
             Log.d("Crop", "Device does not support image cropping")
             return null
@@ -582,9 +538,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             forCropResult.launch(intent)
         }
     }
-
-
 }
+
 
 // TODO(xcy): move these functions to another file
 /// @param folderName can be your app's name
@@ -594,7 +549,8 @@ fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
     values.put(MediaStore.Images.Media.IS_PENDING, true)
     // RELATIVE_PATH and IS_PENDING are introduced in API 29.
 
-    val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        values)
     if (uri != null) {
         saveImageToStream(bitmap, context.contentResolver.openOutputStream(uri))
         values.put(MediaStore.Images.Media.IS_PENDING, false)
@@ -606,8 +562,8 @@ fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
 private fun contentValues() : ContentValues {
     val values = ContentValues()
     values.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-    values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-    values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+    values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+    values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
     return values
 }
 
@@ -616,14 +572,15 @@ private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
         try {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
             outputStream.close()
-        } catch (e: Exception) {
+        }
+        catch (e: Exception) {
             e.printStackTrace()
         }
     }
 }
 
 // TODO: change to kotlin style
-private fun YUV_420_888toNV21(image: Image): ByteArray? {
+private fun YUV_420_888toNV21(image: Image): ByteArray {
     val nv21: ByteArray
     val yBuffer: ByteBuffer = image.getPlanes().get(0).getBuffer()
     val uBuffer: ByteBuffer = image.getPlanes().get(1).getBuffer()
