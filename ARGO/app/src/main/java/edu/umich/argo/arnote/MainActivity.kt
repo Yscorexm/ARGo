@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         loadNote(applicationContext)
         val places = getNote()
+        // TODO: delete the default note
         if (places?.size ?: 0 == 0) {
             addNoteToStore(
                 Note(
@@ -522,6 +523,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         return true
     }
 
+    // TODO(ltj): remove this function and above three lines
     private fun loadAugmentedImage(imagename: String): Bitmap? {
         try {
             assets.open(imagename).use { return BitmapFactory.decodeStream(it) }
@@ -584,6 +586,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 }
 
+// TODO(xcy): move these functions to another file
 /// @param folderName can be your app's name
 fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
     val values = contentValues()
@@ -619,6 +622,7 @@ private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
     }
 }
 
+// TODO: change to kotlin style
 private fun YUV_420_888toNV21(image: Image): ByteArray? {
     val nv21: ByteArray
     val yBuffer: ByteBuffer = image.getPlanes().get(0).getBuffer()

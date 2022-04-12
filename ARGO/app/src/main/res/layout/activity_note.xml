@@ -71,6 +71,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/input_import"
             tools:ignore="DuplicateSpeakableTextCheck" />
+
+<!--        TODO(hwx): add cancel button here, change the position of the button-->
     </androidx.cardview.widget.CardView>
 
     <Button
