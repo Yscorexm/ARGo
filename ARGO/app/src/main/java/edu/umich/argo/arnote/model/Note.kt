@@ -24,11 +24,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * A model describing details about a Place (location, name, type, etc.).
+ * A model describing details about a Note (location, name, type, etc.).
  */
 
 @Serializable
-data class Place(
+data class Note(
     val id: String,
     val type: String,  // (item | gps)
     var message: String,
@@ -41,7 +41,7 @@ data class Place(
     var imageUri: String
 ) {
     override fun equals(other: Any?): Boolean {
-        if (other !is Place) {
+        if (other !is Note) {
             return false
         }
         return this.id == other.id
@@ -56,7 +56,7 @@ data class Place(
     }
 }
 
-fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
+fun Note.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val placeLatLng = this.getLatLng()
     val heading = latLng.sphericalHeading(placeLatLng)
     val distance = getDistance(latLng)
@@ -68,13 +68,13 @@ fun Place.getPositionVector(azimuth: Float, latLng: LatLng): Vector3 {
     val x = x1 + x2
     val y = 1f
     val z = z1 + z2
-    Log.d("Place", this.orientation)
-    Log.d("Place", x1.toString() + " " + x2.toString() + " " + distance.toString())
-    Log.d("Place", Vector3(x, y, z).toString())
+    Log.d("Note", this.orientation)
+    Log.d("Note", x1.toString() + " " + x2.toString() + " " + distance.toString())
+    Log.d("Note", Vector3(x, y, z).toString())
     return Vector3(x, y, z)
 }
 
-fun Place.getDistance(latLng: LatLng): Float {
+fun Note.getDistance(latLng: LatLng): Float {
     val startLocation = Location("Start")
     startLocation.latitude = this.getLatLng().latitude
     startLocation.longitude = this.getLatLng().longitude
@@ -82,6 +82,6 @@ fun Place.getDistance(latLng: LatLng): Float {
     endLocation.latitude = latLng.latitude
     endLocation.longitude = latLng.longitude
     val distance = startLocation.distanceTo(endLocation)
-    Log.d("Place", distance.toString())
+    Log.d("Note", distance.toString())
     return distance
 }

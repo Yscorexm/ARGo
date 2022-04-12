@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.NoteStore.postNote
-import edu.umich.argo.arnote.model.Place
+import edu.umich.argo.arnote.model.Note
 
 
 class EditActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class EditActivity : AppCompatActivity() {
     private lateinit var toolbartitle: TextView
     private lateinit var text: EditText
     private lateinit var shareButton: View
-    private var place: Place? = null
+    private var note: Note? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         // retrieve the note
         super.onCreate(savedInstanceState)
@@ -30,11 +30,11 @@ class EditActivity : AppCompatActivity() {
         placeId?.let {
             shareButton.isEnabled = true
             val places = getNote()
-            place = places.filter {
+            note = places.filter {
                 it.id == placeId
             }.first()
-            text.hint = place?.message
-            text.setText(place?.message, TextView.BufferType.EDITABLE)
+            text.hint = note?.message
+            text.setText(note?.message, TextView.BufferType.EDITABLE)
         }?: let {
             shareButton.isEnabled = false
         }
@@ -51,7 +51,7 @@ class EditActivity : AppCompatActivity() {
         toolbar.inflateMenu(R.menu.editmenu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.action_share -> place?.let { p -> postNote(this, p) }
+                R.id.action_share -> note?.let { p -> postNote(this, p) }
             }
             true
         }

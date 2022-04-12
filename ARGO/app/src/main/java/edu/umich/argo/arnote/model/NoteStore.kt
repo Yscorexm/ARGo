@@ -20,16 +20,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import android.graphics.Bitmap
 
-import android.graphics.BitmapFactory
-
-import android.os.AsyncTask
-import android.widget.ImageView
-import edu.umich.argo.arnote.R
-import edu.umich.argo.arnote.saveImage
-import java.io.InputStream
-import java.lang.Exception
-import java.net.URL
-
 
 /*
 Supports add note, edit note, load note
@@ -65,7 +55,7 @@ fun Uri.toFile(context: Context): File? {
 
 object NoteStore {
     private val TAG="NoteStore"
-    var notes = mutableListOf<Place>()
+    var notes = mutableListOf<Note>()
     private val nFields = 11
     private const val serverUrl = "https://441.scarletissimo.cf/"
     private const val gpsFilePath = "gps_notes.json"
@@ -98,12 +88,12 @@ object NoteStore {
         }
     }
 
-    fun addNoteToStore(place: Place) {
-        notes.add(place)
+    fun addNoteToStore(note: Note) {
+        notes.add(note)
     }
 
-    fun editNote(place: Place?, message: String) {
-        val targetId = place?.id
+    fun editNote(note: Note?, message: String) {
+        val targetId = note?.id
         for (i in 0 until notes.size) {
             if (targetId != null) {
                 if (i == targetId.toInt()) {
@@ -125,7 +115,7 @@ object NoteStore {
             val noteEntry = data[i] as JSONObject?
             if (noteEntry != null) {
                 notes.add(
-                    Place(
+                    Note(
                         id = noteEntry.get("id").toString(),
                         type = noteEntry.get("type").toString(),
                         message = noteEntry.get("message").toString(),
@@ -142,11 +132,11 @@ object NoteStore {
         }
     }
 
-    fun getNote(): MutableList<Place> {
+    fun getNote(): MutableList<Note> {
         return notes
     }
 
-    fun getNotebyId(id: String) : Place {
+    fun getNotebyId(id: String) : Note {
         val noteResult = notes.filter {
             it.id == id
         }
@@ -156,22 +146,22 @@ object NoteStore {
         return noteResult[0]
     }
 
-    // add a local place to backend
-    fun postNote(context: Context, place: Place) {
+    // add a local note to backend
+    fun postNote(context: Context, note: Note) {
         var mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("message", place.message)
+            .addFormDataPart("message", note.message)
         var finalUrl=serverUrl;
-        if (place.type=="gps"){
-            mpFD.addFormDataPart("lat", place.lat)
-                .addFormDataPart("lng", place.lng)
-                .addFormDataPart("x", place.x)
-                .addFormDataPart("y", place.y)
-                .addFormDataPart("z", place.z)
-                .addFormDataPart("orientation",place.orientation)
+        if (note.type=="gps"){
+            mpFD.addFormDataPart("lat", note.lat)
+                .addFormDataPart("lng", note.lng)
+                .addFormDataPart("x", note.x)
+                .addFormDataPart("y", note.y)
+                .addFormDataPart("z", note.z)
+                .addFormDataPart("orientation",note.orientation)
 
             finalUrl+="postnoteplace/"
         }else{
-            val imageUri=Uri.parse(place.imageUri)
+            val imageUri=Uri.parse(note.imageUri)
             imageUri?.run {
                 toFile(context)?.let {
                     mpFD.addFormDataPart("image", "itemImage",
@@ -209,7 +199,7 @@ object NoteStore {
     }
 
     // retrieve a note from backend and add to local
-    fun addNoteByID(ID:String, completion: (Place)->Unit) {
+    fun addNoteByID(ID:String, completion: (Note)->Unit) {
         val request = Request.Builder()
             .url(serverUrl + "getnote/?ID="+ID)
             .build()
@@ -228,7 +218,7 @@ object NoteStore {
                     }
                     val chattEntry = chattsReceived as JSONArray
                     if (chattEntry.length() == nFields) {
-                        completion(Place(
+                        completion(Note(
                             id = storeSize().toString(),
                             message = chattEntry[1].toString(),
                             type = chattEntry[10].toString(),

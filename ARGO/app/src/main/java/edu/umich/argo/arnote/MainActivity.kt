@@ -60,7 +60,7 @@ import edu.umich.argo.arnote.model.NoteStore.getNote
 import edu.umich.argo.arnote.model.NoteStore.getNotebyId
 import edu.umich.argo.arnote.model.NoteStore.loadNote
 import edu.umich.argo.arnote.model.NoteStore.storeSize
-import edu.umich.argo.arnote.model.Place
+import edu.umich.argo.arnote.model.Note
 import edu.umich.argo.arnote.model.getDistance
 import edu.umich.argo.arnote.model.getPositionVector
 import java.io.*
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var anchorNode: AnchorNode? = null
     private var otherAnchorNodes = mutableListOf<AnchorNode>()
-    private var currentLocation: Place? = null
+    private var currentLocation: Note? = null
 
     private var anchorSelected: Boolean = false
     private var newAnchorNode: AnchorNode? = null
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val places = getNote()
         if (places?.size ?: 0 == 0) {
             addNoteToStore(
-                Place(
+                Note(
                     storeSize().toString(),
                     "gps",
                     "note1, balabala",
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 ),
             )
             addNoteToStore(
-                Place(storeSize().toString(),
+                Note(storeSize().toString(),
                     "gps",
                     "note2, wt",
                     lat=(42.299268).toString(),
@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 val message = it.data?.getStringExtra("message")?:""
 
                 currentLocation?.let {
-                    val place = Place(
+                    val place = Note(
                         storeSize().toString(),
                         "gps",
                         message,
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         orientationAngles[0].toString(),
                         ""
                     )
-                    Log.d("Place", orientationAngles[0].toString())
+                    Log.d("Note", orientationAngles[0].toString())
                     addNoteToStore(place)
                     newAnchorNode?.let {
                         val placeNode = PlaceNode(this, place)
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         createItemLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 val message = it.data?.getStringExtra("message")?:""
-                val place = Place(
+                val place = Note(
                     storeSize().toString(),
                     "item",
                     message,
@@ -246,7 +246,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 val message = it.data?.getStringExtra("message")
                 currentPlaceNode?.setText(message)
                 if (message != null) {
-                    editNote(currentPlaceNode?.place, message)
+                    editNote(currentPlaceNode?.note, message)
                 }
             }
         }
@@ -420,15 +420,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         for (place in places) {
-            // Skip item based place
+            // Skip item based note
             if (place.lat == "") {
                 continue
             }
-            // Add the place in AR
+            // Add the note in AR
              if (place.type == "item") { continue }
             val placeNode = PlaceNode(this, place)
-            if (placeNode.place != null) {
-                if (placeNode.place.getDistance(currentLocation.getLatLng()) > 10.0) {
+            if (placeNode.note != null) {
+                if (placeNode.note.getDistance(currentLocation.getLatLng()) > 10.0) {
                     continue
                 }
             }
@@ -441,16 +441,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    private fun showInfoWindow(place: Place, anchorNode: AnchorNode) {
+    private fun showInfoWindow(note: Note, anchorNode: AnchorNode) {
         // Show in AR
         currentPlaceNode = anchorNode?.children?.filter {
             it is PlaceNode
         }?.first {
-            val otherPlace = (it as PlaceNode).place ?: return@first false
-            return@first otherPlace == place
+            val otherPlace = (it as PlaceNode).note ?: return@first false
+            return@first otherPlace == note
         } as? PlaceNode
         val intent = Intent(this, EditActivity::class.java)
-        intent.putExtra("placeId", place.id)
+        intent.putExtra("placeId", note.id)
         editLauncher.launch(intent)
     }
 
@@ -460,7 +460,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    currentLocation = Place(
+                    currentLocation = Note(
                         "current",
                         "gps",
                         "ok",
@@ -531,15 +531,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         return null
     }
 
-    private fun placeObject(arFragment: ArFragment, anchor: Anchor, place: Place) {
+    private fun placeObject(arFragment: ArFragment, anchor: Anchor, note: Note) {
         val anchorNode = AnchorNode(anchor)
-        val placeNode = PlaceNode(this, place)
+        val placeNode = PlaceNode(this, note)
         placeNode.setParent(anchorNode)
         placeNode.localScale = Vector3(0.20f, 0.20f, 0.20f)
         placeNode.localPosition = Vector3(0f, 0f, 0f)
         placeNode.localRotation = Quaternion(Vector3(90f, 270f, 0f))
         placeNode.setOnTapListener { _, _ ->
-            showInfoWindow(place, anchorNode)
+            showInfoWindow(note, anchorNode)
         }
         anchorNode.setParent(arFragment.arSceneView.scene)
     }

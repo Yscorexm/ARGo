@@ -13,8 +13,8 @@ import com.squareup.picasso.Picasso
 
 
 
-class NoteListAdapter(context: Context, users: MutableList<Place>) :
-    ArrayAdapter<Place?>(context, 0, users as List<Place?>) {
+class NoteListAdapter(context: Context, users: MutableList<Note>) :
+    ArrayAdapter<Note?>(context, 0, users as List<Note?>) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val rowView = LayoutInflater.from(context).inflate(R.layout.listitem_note, parent, false)
