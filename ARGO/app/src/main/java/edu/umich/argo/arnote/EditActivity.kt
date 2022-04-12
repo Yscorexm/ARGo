@@ -59,7 +59,7 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
-    fun saveNote() {
+    fun saveNote(view: View?) {
         val editText = findViewById<EditText>(R.id.message)
         val intent = Intent()
         intent.putExtra("message", editText.text.toString())
