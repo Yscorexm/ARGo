@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return
         }
         setContentView(R.layout.activity_main)
-        getPermission()              // get permission for GPS
+        getPermission()
         getCurrentLocation()
         createLaunchers()
         arFragment = supportFragmentManager.findFragmentById(R.id.ar_fragment) as PlacesArFragment
