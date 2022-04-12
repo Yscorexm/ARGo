@@ -31,6 +31,7 @@ object NoteStore {
     private val client = OkHttpClient()
 
     private fun file2JsonStr(context: Context): String? {
+        // better be using database I/O instead
         val stringBuilder = StringBuilder()
         try {
             val bf = context.openFileInput(gpsFilePath).bufferedReader()
