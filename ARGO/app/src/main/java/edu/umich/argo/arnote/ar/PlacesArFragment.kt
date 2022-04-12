@@ -27,7 +27,7 @@ import java.util.*
 
 class PlacesArFragment : ArFragment() {
     private var anchorSelected: Boolean = false
-    var imageDatabase: AugmentedImageDatabase? = null
+    private var imageDatabase: AugmentedImageDatabase? = null
     private val arAugImageDBPath = "argo_item_notes_database.imgdb"
 
     override fun getAdditionalPermissions(): Array<String> =
@@ -48,8 +48,8 @@ class PlacesArFragment : ArFragment() {
     override fun getSessionConfiguration(session: Session): Config {
 //        planeDiscoveryController.setInstructionView(null)
         val config = Config(session)
-        config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE)
-        config.setFocusMode(Config.FocusMode.AUTO)
+        config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+        config.focusMode = Config.FocusMode.AUTO
 
         val filter = CameraConfigFilter(session)
 

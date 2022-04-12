@@ -37,7 +37,7 @@ fun Uri.toFile(context: Context): File? {
     if (scheme.equals("content")) {
         var cursor: Cursor? = null
         try {
-            cursor = context.getContentResolver().query(
+            cursor = context.contentResolver.query(
                 this, arrayOf("_data"),
                 null, null, null
             )
@@ -54,9 +54,9 @@ fun Uri.toFile(context: Context): File? {
 }
 
 object NoteStore {
-    private val TAG="NoteStore"
-    var notes = mutableListOf<Note>()
-    private val nFields = 11
+    private const val TAG="NoteStore"
+    private var notes = mutableListOf<Note>()
+    private const val nFields = 11
     private const val serverUrl = "https://441.scarletissimo.cf/"
     private const val gpsFilePath = "gps_notes.json"
     private val client = OkHttpClient()
@@ -148,9 +148,9 @@ object NoteStore {
 
     // add a local note to backend
     fun postNote(context: Context, note: Note) {
-        var mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
+        val mpFD = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("message", note.message)
-        var finalUrl=serverUrl;
+        var finalUrl=serverUrl
         if (note.type=="gps"){
             mpFD.addFormDataPart("lat", note.lat)
                 .addFormDataPart("lng", note.lng)
