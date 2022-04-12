@@ -3,7 +3,7 @@ package edu.umich.argo.arnote
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
+import android.graphics.ImageFormat.NV21
 import android.graphics.Rect
 import android.graphics.YuvImage
 import android.media.Image
@@ -13,9 +13,10 @@ import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
+/// @param folderName can be your app's name
 fun saveImage(bitmap: Bitmap, context: Context, folderName: String): Uri? {
     val values = contentValues()
-    values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/" + folderName)
+    values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$folderName")
     values.put(MediaStore.Images.Media.IS_PENDING, true)
     // RELATIVE_PATH and IS_PENDING are introduced in API 29.
 
@@ -50,8 +51,7 @@ private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
     }
 }
 
-// TODO: change to kotlin style
-fun YUV_420_888toNV21(image: Image): ByteArray {
+fun yuv_420_888toNV21(image: Image): ByteArray {
     val nv21: ByteArray
     val yBuffer: ByteBuffer = image.planes[0].buffer
     val uBuffer: ByteBuffer = image.planes[1].buffer
@@ -68,9 +68,9 @@ fun YUV_420_888toNV21(image: Image): ByteArray {
     return nv21
 }
 
-fun NV21toJPEG(nv21: ByteArray, width: Int, height: Int): ByteArray? {
+fun nv21toJPEG(nv21: ByteArray, width: Int, height: Int): ByteArray? {
     val out = ByteArrayOutputStream()
-    val yuv = YuvImage(nv21, ImageFormat.NV21, width, height, null)
+    val yuv = YuvImage(nv21, NV21, width, height, null)
     yuv.compressToJpeg(Rect(0, 0, width, height), 100, out)
     return out.toByteArray()
 }
