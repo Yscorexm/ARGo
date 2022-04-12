@@ -54,7 +54,7 @@ class PlacesArFragment : ArFragment() {
         val filter = CameraConfigFilter(session)
 
         filter.setTargetFps(EnumSet.of(CameraConfig.TargetFps.TARGET_FPS_30))
-        val cameraConfigList = session?.getSupportedCameraConfigs(filter)
+        val cameraConfigList = session.getSupportedCameraConfigs(filter)
 
         session.cameraConfig = cameraConfigList[0]
 
