@@ -186,7 +186,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         placeNode.setParent(it)
                         placeNode.localPosition = Vector3(0f, 1f, 0f)
                         placeNode.setOnTapListener { _, _ ->
-                            showInfoWindow(place, it)
+                            tapToEdit(place, it)
                         }
                     }
                 }
@@ -396,12 +396,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             placeNode.localPosition = place.getPositionVector(orientationAngles[0],
                 currentLocation.getLatLng())
             placeNode.setOnTapListener { _, _ ->
-                showInfoWindow(place, anchorNode)
+                tapToEdit(place, anchorNode)
             }
         }
     }
 
-    private fun showInfoWindow(note: Note, anchorNode: AnchorNode) {
+    private fun tapToEdit(note: Note, anchorNode: AnchorNode) {
         // Show in AR
         currentPlaceNode = anchorNode.children?.filterIsInstance<PlaceNode>()?.first {
             val otherPlace = it.note ?: return@first false
@@ -489,7 +489,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         placeNode.localPosition = Vector3(0f, 0f, 0f)
         placeNode.localRotation = Quaternion(Vector3(90f, 270f, 0f))
         placeNode.setOnTapListener { _, _ ->
-            showInfoWindow(note, anchorNode)
+            tapToEdit(note, anchorNode)
         }
         anchorNode.setParent(arFragment.arSceneView.scene)
     }

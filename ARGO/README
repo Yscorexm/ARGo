@@ -1,9 +1,0 @@
-# TODO
-+ Create a note by converting the location from hit
-+ Make the render object a textbox
-+ Remove the map below, add ARGo logo and list button on the top
-+ Store the places on somewhere
-+ Filter the note by distance
-+ Refresh the mainview on (location change, sensor change?)
-+ Finish the textbox, click and edit...
-
