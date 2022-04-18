@@ -100,13 +100,13 @@ class NoteActivity : AppCompatActivity() {
                         Log.d("Downloader", "Processing the image...")
                         showToast("Processing the image...")
                     }
-                    val bitmap=getBitmap(it.imageUri)
-                    if (bitmap!=null){
-                        it.imageUri = saveImage(bitmap,applicationContext,"ARcore").toString()
-                        NoteStore.toAdd.add(bitmap)
-                        NoteStore.toAdd_name.add(NoteStore.storeSize().toString())
+                    if (it.imageUri != "null" && it.imageUri != "") {
+                        getBitmap(it.imageUri)?.let { bitmap ->
+                            it.imageUri = saveImage(bitmap,applicationContext,"ARcore").toString()
+                            NoteStore.toAdd.add(bitmap)
+                            NoteStore.toAdd_name.add(NoteStore.storeSize().toString())
+                        }
                     }
-
                     withContext(Dispatchers.Main) {
                         Log.d("Downloader", "Done!")
                         showToast("Done!")
