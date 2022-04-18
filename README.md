@@ -11,6 +11,6 @@ ARGo is an Android app that allows you to view, create, edit, and share AR stick
 ![Team](https://user-images.githubusercontent.com/42313454/163046748-1c612d6f-8a90-4540-a050-861daaaed8b4.jpg)
 
 
-[demo_page]: https://youtu.be/sample
+[demo_page]: https://youtu.be/mN4nRNxuwDw
 [wiki_page]: https://github.com/Yscorexm/ARGo/wiki
 [process_page]: https://trello.com/b/KNn8Mzcd/argo
